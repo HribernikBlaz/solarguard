@@ -1,23 +1,22 @@
-# {Kratek naslov odločitve}
-
-* Status: {predlagano | sprejeto | zavrnjeno | nadomeščeno z [ADR-XXXX](XXXX-....md)}
-* Datum: {LLLL-MM-DD}
+# {kratek naslov, ki predstavlja rešen problem in najdeno rešitev}
 
 ## Kontekst in problem
 
-{Opis problema in okoliščin, zaradi katerih je odločitev potrebna.}
+{Opis konteksta in problema v dveh ali treh stavkih. Lahko tudi v obliki vprašanja. Jasno navedite obseg odločitve, npr. katere komponente se tičejo.}
 
-## Obravnavane alternative
+## Obravnavane možnosti
 
-* {Alternativa 1}
-* {Alternativa 2}
-* {Alternativa 3}
+* {naslov možnosti 1}
+* {naslov možnosti 2}
+* {naslov možnosti 3}
+* … <!-- število možnosti je lahko različno -->
 
 ## Odločitev
 
-Izbrano: "{alternativa}", ker {utemeljitev}.
+Izbrana možnost: "{naslov možnosti 1}", ker {utemeljitev, npr. edina možnost, ki izpolnjuje ključni kriterij | reši silo {sila} | se izkaže za najboljšo}.
 
-## Posledice
+### Posledice
 
-* Dobro: {pozitivna posledica}
-* Slabo: {negativna posledica}
+* Dobro, ker {pozitivna posledica, npr. izboljšanje ene ali več želenih lastnosti, …}
+* Slabo, ker {negativna posledica, npr. poslabšanje ene ali več želenih lastnosti, …}
+* … <!-- število posledic je lahko različno -->
