@@ -1,13 +1,10 @@
 # Ločen background servis za obdelavo meritev
 
-* Status: sprejeto
-* Datum: 2026-10-27
-
 ## Kontekst in problem
 
-Zaznavanje anomalij (primerjava dejanske in pričakovane proizvodnje) je lahko časovno zahtevno. Ne sme upočasniti odzivov API-ja za uporabnike.
+Zaznavanje anomalij (primerjava dejanske in pričakovane proizvodnje) je lahko časovno zahtevno. Kje naj poteka obdelava, da ne upočasni odzivov API-ja za uporabnike?
 
-## Obravnavane alternative
+## Obravnavane možnosti
 
 * Obdelava znotraj API zahtevkov
 * Ločen background servis (.NET Hosted Service)
@@ -15,9 +12,11 @@ Zaznavanje anomalij (primerjava dejanske in pričakovane proizvodnje) je lahko �
 
 ## Odločitev
 
-Izbrano: "ločen background servis (.NET Hosted Service)", ker obdelavo loči od API klicev in ne zahteva dodatne infrastrukture. Deli isto bazo kot API.
+Izbrana možnost: "ločen background servis (.NET Hosted Service)", ker obdelavo loči od API klicev in ne zahteva dodatne infrastrukture. Deli isto bazo kot API.
 
-## Posledice
+### Posledice
 
-* Dobro: API ostane hiter, obdelavo je mogoče neodvisno razvijati in skalirati.
-* Slabo: dodatna komponenta za zagon in spremljanje; ni vgrajenega nadzora opravil, kot ga ponuja Hangfire.
+* Dobro, ker API ostane hiter.
+* Dobro, ker je obdelavo mogoče neodvisno razvijati in skalirati.
+* Slabo, ker je potrebna dodatna komponenta za zagon in spremljanje.
+* Slabo, ker ni vgrajenega nadzora opravil, kot ga ponuja Hangfire.

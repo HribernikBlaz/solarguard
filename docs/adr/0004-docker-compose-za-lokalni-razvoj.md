@@ -1,13 +1,10 @@
 # Docker Compose za lokalni razvoj
 
-* Status: sprejeto
-* Datum: 2026-10-27
-
 ## Kontekst in problem
 
-Sistem sestavljajo API, Angular odjemalec in PostgreSQL. Vsi razvijalci potrebujejo enako okolje, zagon pa mora biti enostaven.
+Sistem sestavljajo API, Angular odjemalec in PostgreSQL. Vsi razvijalci potrebujejo enako okolje, zagon pa mora biti enostaven. Kako lokalno zagnati vse komponente?
 
-## Obravnavane alternative
+## Obravnavane možnosti
 
 * Ročna namestitev vseh komponent na računalnik
 * Docker Compose
@@ -15,9 +12,11 @@ Sistem sestavljajo API, Angular odjemalec in PostgreSQL. Vsi razvijalci potrebuj
 
 ## Odločitev
 
-Izbrano: "Docker Compose", ker en ukaz (`docker compose up`) zažene celoten sistem. Kubernetes je za ta obseg projekta pretirano zapleten.
+Izbrana možnost: "Docker Compose", ker en ukaz (`docker compose up`) zažene celoten sistem. Kubernetes je za ta obseg projekta pretirano zapleten.
 
-## Posledice
+### Posledice
 
-* Dobro: ponovljivo okolje, hiter zagon, brez lokalne namestitve baze.
-* Slabo: zahteva Docker; Compose ni primeren za produkcijo z večjo obremenitvijo.
+* Dobro, ker je okolje ponovljivo in se hitro zažene.
+* Dobro, ker ni treba lokalno nameščati baze.
+* Slabo, ker je potreben Docker.
+* Slabo, ker Compose ni primeren za produkcijo z večjo obremenitvijo.
