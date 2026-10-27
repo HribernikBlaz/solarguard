@@ -1,0 +1,34 @@
+services:
+  solarguard-api:
+    build: ./backend/SolarGuard.Api
+    container_name: solarguard-api
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      ConnectionStrings__Default: Host=solarguard-db;Port=26257;Database=solarguard;Username=root;SSL Mode=Disable
+    networks:
+      - solarguard-net
+
+  solarguard-web:
+    build: ./frontend
+    container_name: solarguard-web
+    restart: unless-stopped
+    depends_on:
+      - solarguard-api
+    networks:
+      - solarguard-net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: solarguard-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    networks:
+      - solarguard-net
+
+networks:
+  solarguard-net:
+    external: true

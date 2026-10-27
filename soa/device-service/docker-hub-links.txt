@@ -1,0 +1,2 @@
+https://hub.docker.com/r/hribernikblaz/solarguard-device-db
+https://hub.docker.com/r/hribernikblaz/solarguard-device-api
