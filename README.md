@@ -28,7 +28,14 @@ Ob prvem zagonu se samodejno ustvari baza (shema iz `backend/SolarGuard.Api/Migr
 | API (Swagger)     | http://localhost:8080/swagger                                             |
 | Baza (PostgreSQL) | localhost:5432, baza `solarguard`, uporabnik `postgres`, geslo `postgres` |
 
-Prijava: admin `admin@solarguard.local` / `Admin12345`. Lastnika ustvariš z registracijo v aplikaciji.
+Prijava:
+
+| Vloga | E-pošta | Geslo |
+|---|---|---|
+| Lastnik (ima testne sisteme) | `lastnik@solarguard.local` | `Lastnik12345` |
+| Admin (vidi vse) | `admin@solarguard.local` | `Admin12345` |
+
+Nov lastnik se ustvari z registracijo v aplikaciji in na začetku nima sistemov.
 
 Ponastavitev baze (nov seed, pobriše tudi registrirane uporabnike): `docker compose down -v`, nato ponovno `docker compose up --build`.
 

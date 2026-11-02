@@ -10,6 +10,8 @@ services:
       Jwt__Key: ${JWT_KEY:?JWT_KEY mora biti nastavljen v .env}
       Admin__Email: ${ADMIN_EMAIL:-}
       Admin__Password: ${ADMIN_PASSWORD:-}
+      Demo__Email: ${DEMO_EMAIL:-}
+      Demo__Password: ${DEMO_PASSWORD:-}
     networks:
       - solarguard-net
 

@@ -50,17 +50,45 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// prvega admina ni mogoče ustvariti prek aplikacije, zato ga ustvarimo iz nastavitev (Admin:Email, Admin:Password)
-if (builder.Configuration["Admin:Email"] is { Length: > 0 } adminEmail && builder.Configuration["Admin:Password"] is { Length: > 0 } adminPassword)
+// prvega admina ni mogoče ustvariti prek aplikacije, zato ga ustvarimo iz nastavitev
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var users = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-    if ((await users.GetUsersInRoleAsync(AppRoles.Admin)).Count == 0)
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var adminEmail = builder.Configuration["Admin:Email"];
+    var adminPassword = builder.Configuration["Admin:Password"];
+    var demoEmail = builder.Configuration["Demo:Email"];
+    var demoPassword = builder.Configuration["Demo:Password"];
+
+    async Task<AppUser?> CreateUser(string email, string password, string firstName, string lastName, string role)
     {
-        var admin = new AppUser { UserName = adminEmail, Email = adminEmail, FirstName = "Admin", LastName = "Platforme" };
-        var created = await users.CreateAsync(admin, adminPassword);
-        if (created.Succeeded) await users.AddToRoleAsync(admin, AppRoles.Admin);
-        else app.Logger.LogError("Admin ni bil ustvarjen: {Errors}", string.Join(", ", created.Errors.Select(e => e.Description)));
+        var user = new AppUser { UserName = email, Email = email, FirstName = firstName, LastName = lastName };
+        var created = await users.CreateAsync(user, password);
+        if (created.Succeeded)
+        {
+            var added = await users.AddToRoleAsync(user, role);
+            if (added.Succeeded)
+                return user;
+        }
+
+        app.Logger.LogError("Uporabnik {Email} ni bil ustvarjen: {Errors}", email, string.Join(", ", created.Errors.Select(e => e.Description)));
+
+        return null;
+    }
+
+    if (!string.IsNullOrEmpty(adminEmail) && !string.IsNullOrEmpty(adminPassword))
+    {
+        var admins = await users.GetUsersInRoleAsync(AppRoles.Admin);
+        if (admins.Count == 0)
+            await CreateUser(adminEmail, adminPassword, "Admin", "Platforme", AppRoles.Admin);
+    }
+
+    if (!string.IsNullOrEmpty(demoEmail) && !string.IsNullOrEmpty(demoPassword))
+    {
+        var owner = await users.FindByEmailAsync(demoEmail);
+        owner ??= await CreateUser(demoEmail, demoPassword, "Demo", "Lastnik", AppRoles.Owner);
+        if (owner is not null)
+            await db.Installations.Where(i => i.OwnerId == null).ExecuteUpdateAsync(s => s.SetProperty(i => i.OwnerId, owner.Id));
     }
 }
 
