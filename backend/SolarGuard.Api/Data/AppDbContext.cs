@@ -22,6 +22,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             NormalizedName = name.ToUpperInvariant(),
             ConcurrencyStamp = $"role-{i + 1}",
         }));
+        b.Entity<Installation>().HasOne<AppUser>().WithMany().HasForeignKey(i => i.OwnerId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<Device>().HasIndex(d => new { d.InstallationId, d.SerialNumber }).IsUnique();
         b.Entity<Installation>().HasMany<Device>().WithOne().HasForeignKey(d => d.InstallationId);
         b.Entity<Device>().HasMany<Measurement>().WithOne().HasForeignKey(m => m.DeviceId);
         b.Entity<Device>().Property(d => d.Type).HasConversion<string>();

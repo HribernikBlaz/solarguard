@@ -11,7 +11,8 @@ export interface PageConfig {
   path: string;
   fields: Field[];
   sortBy?: string;
-  detail?: string; // pot strani s podrobnostmi, doda povezavo v vrstici
+  filter?: { key: string; label: string; options: string[] };
+  detail?: string;
   empty: () => Record<string, unknown>;
 }
 
@@ -36,15 +37,18 @@ export const INSTALLATIONS: PageConfig = {
 export const DEVICES: PageConfig = {
   title: 'Naprave',
   path: 'devices',
+  sortBy: 'installedOn',
+  filter: { key: 'type', label: 'Tip', options: ['Panel', 'Inverter'] },
   fields: [
     { key: 'installationId', label: 'Sistem', type: 'select', ref: installationRef },
     { key: 'type', label: 'Tip', type: 'select', options: ['Panel', 'Inverter'] },
     { key: 'manufacturer', label: 'Proizvajalec', type: 'text' },
     { key: 'model', label: 'Model', type: 'text' },
     { key: 'serialNumber', label: 'Serijska številka', type: 'text' },
+    { key: 'installedOn', label: 'Datum namestitve', type: 'date' },
     { key: 'warrantyUntil', label: 'Garancija do', type: 'date' },
   ],
-  empty: () => ({ installationId: '', type: 'Panel', manufacturer: '', model: '', serialNumber: '', warrantyUntil: '' }),
+  empty: () => ({ installationId: '', type: 'Panel', manufacturer: '', model: '', serialNumber: '', installedOn: '', warrantyUntil: '' }),
 };
 
 export const MEASUREMENTS: PageConfig = {

@@ -13,5 +13,6 @@ public class Device : Entity
     public string Manufacturer { get; set; } = "";
     public string Model { get; set; } = "";
     public string SerialNumber { get; set; } = "";
+    public DateOnly InstalledOn { get; set; }
     public DateOnly WarrantyUntil { get; set; }
 }

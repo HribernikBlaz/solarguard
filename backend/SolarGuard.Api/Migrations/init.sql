@@ -148,3 +148,23 @@ VALUES ('20261102184854_Identity', '10.0.13');
 
 COMMIT;
 
+START TRANSACTION;
+DROP INDEX "IX_Devices_InstallationId";
+
+ALTER TABLE "Installations" ADD "OwnerId" uuid;
+
+ALTER TABLE "Devices" ADD "InstalledOn" date NOT NULL DEFAULT DATE '-infinity';
+
+UPDATE "Devices" SET "InstalledOn" = i."InstallationDate" FROM "Installations" i WHERE i."Id" = "Devices"."InstallationId";
+
+CREATE INDEX "IX_Installations_OwnerId" ON "Installations" ("OwnerId");
+
+CREATE UNIQUE INDEX "IX_Devices_InstallationId_SerialNumber" ON "Devices" ("InstallationId", "SerialNumber");
+
+ALTER TABLE "Installations" ADD CONSTRAINT "FK_Installations_AspNetUsers_OwnerId" FOREIGN KEY ("OwnerId") REFERENCES "AspNetUsers" ("Id") ON DELETE RESTRICT;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20261102195325_LastnikSistemaInDatumNamestitve', '10.0.13');
+
+COMMIT;
+

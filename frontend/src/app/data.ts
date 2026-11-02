@@ -19,6 +19,7 @@ export interface Device {
   manufacturer: string;
   model: string;
   serialNumber: string;
+  installedOn: string;
   warrantyUntil: string;
 }
 export interface Measurement {
@@ -44,7 +45,7 @@ export interface Overview {
 }
 
 const TILT = 30;
-const AZIMUTH = 0; // shortcut: privzeta orientacija (jug, 30°), dodaj naklon in azimut v Installation, ko bo čas za senco
+const AZIMUTH = 0;
 
 @Injectable({ providedIn: 'root' })
 export class ForecastService {
@@ -82,7 +83,6 @@ export class SolarData {
   private readonly http = inject(HttpClient);
   private readonly forecast = inject(ForecastService);
 
-  // shortcut: API nima filtrov, naložimo vse in filtriramo tu; ob rasti meritev dodaj filter v MeasurementsController
   overview(): Observable<Overview[]> {
     return forkJoin({
       installations: this.http.get<Installation[]>('/api/installations'),
@@ -92,8 +92,8 @@ export class SolarData {
       switchMap(({ installations, devices, measurements }) =>
         installations.length
           ? forkJoin(installations.map((i) => this.forecast.get(i).pipe(catchError(() => of(null))))).pipe(
-              map((weathers) => installations.map((i, k) => build(i, devices, measurements, weathers[k]))),
-            )
+            map((weathers) => installations.map((i, k) => build(i, devices, measurements, weathers[k]))),
+          )
           : of([]),
       ),
     );
@@ -107,14 +107,16 @@ function build(inst: Installation, allDevices: Device[], all: Measurement[], wea
   const measurements = all.filter((m) => ids.has(m.deviceId));
 
   const expected = new Map<number, number>(weather?.hours.map((h) => [h.t, expectedKwh(h.gti, inst.ratedPowerKw)]));
-  // shortcut: meritve morajo biti poravnane na polno uro (kot seed in prototip), neporavnanih ne primerjamo
   const actual = new Map<number, number>();
   const last = new Map<string, Measurement>();
   for (const m of measurements) {
     const t = Date.parse(m.timestamp);
-    if (panels.has(m.deviceId)) actual.set(t, (actual.get(t) ?? 0) + m.productionKwh);
-    if (t <= Date.now() && (!last.has(m.deviceId) || t > Date.parse(last.get(m.deviceId)!.timestamp))) last.set(m.deviceId, m);
+    if (panels.has(m.deviceId))
+      actual.set(t, (actual.get(t) ?? 0) + m.productionKwh);
+    if (t <= Date.now() && (!last.has(m.deviceId) || t > Date.parse(last.get(m.deviceId)!.timestamp)))
+      last.set(m.deviceId, m);
   }
   const hasError = [...last.values()].some((m) => m.hasError);
+
   return { inst, devices, measurements, weather, expected, actual, result: evaluate(expected, actual, Date.now(), hasError) };
 }

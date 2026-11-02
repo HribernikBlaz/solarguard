@@ -257,6 +257,9 @@ namespace SolarGuard.Api.Migrations
                     b.Property<Guid>("InstallationId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateOnly>("InstalledOn")
+                        .HasColumnType("date");
+
                     b.Property<string>("Manufacturer")
                         .IsRequired()
                         .HasColumnType("text");
@@ -278,7 +281,8 @@ namespace SolarGuard.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InstallationId");
+                    b.HasIndex("InstallationId", "SerialNumber")
+                        .IsUnique();
 
                     b.ToTable("Devices");
                 });
@@ -308,11 +312,16 @@ namespace SolarGuard.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("OwnerId")
+                        .HasColumnType("uuid");
+
                     b.Property<decimal>("RatedPowerKw")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("Installations");
                 });
@@ -405,6 +414,14 @@ namespace SolarGuard.Api.Migrations
                         .HasForeignKey("InstallationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SolarGuard.Api.Models.Installation", b =>
+                {
+                    b.HasOne("SolarGuard.Api.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("SolarGuard.Api.Models.Measurement", b =>

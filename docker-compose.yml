@@ -25,6 +25,8 @@ services:
       Jwt__Key: samo-za-lokalni-razvoj-0123456789-0123456789
       Admin__Email: admin@solarguard.local
       Admin__Password: Admin12345
+      Demo__Email: lastnik@solarguard.local
+      Demo__Password: Lastnik12345
     ports:
       - "127.0.0.1:8080:8080"
 

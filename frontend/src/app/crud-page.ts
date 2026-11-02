@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, inject, input, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
@@ -12,6 +12,26 @@ import { Field, PageConfig } from './pages';
   imports: [FormsModule, DatePipe, RouterLink],
   template: `
     <h1>{{ config().title }}</h1>
+    @if (config().filter || config().sortBy) {
+      <div class="page-head">
+        @if (config().filter; as f) {
+          <label>
+            {{ f.label }}:
+            <select [ngModel]="filterValue()" (ngModelChange)="filterValue.set($event)">
+              <option value="">Vsi</option>
+              @for (o of f.options; track o) {
+                <option [value]="o">{{ o }}</option>
+              }
+            </select>
+          </label>
+        }
+        @if (config().sortBy) {
+          <button type="button" (click)="newestFirst.set(!newestFirst())">
+            Razvrsti: {{ newestFirst() ? 'najnovejše prej' : 'najstarejše prej' }}
+          </button>
+        }
+      </div>
+    }
     @if (error()) {
       <p class="error">{{ error() }}</p>
     }
@@ -112,7 +132,24 @@ import { Field, PageConfig } from './pages';
 })
 export class CrudPage implements OnInit {
   readonly config = input.required<PageConfig>();
-  protected readonly rows = signal<any[]>([]);
+  private readonly loaded = signal<any[]>([]);
+  protected readonly filterValue = signal('');
+  protected readonly newestFirst = signal(true);
+  protected readonly rows = computed(() => {
+    const { filter, sortBy } = this.config();
+    let rows = this.loaded();
+
+    if (filter && this.filterValue()) {
+      rows = rows.filter((r) => r[filter.key] === this.filterValue());
+    }
+    if (!sortBy) {
+      return rows;
+    }
+
+    const dir = this.newestFirst() ? 1 : -1;
+
+    return [...rows].sort((a, b) => (a[sortBy] < b[sortBy] ? dir : -dir));
+  });
   protected readonly refs = signal<Record<string, any[]>>({});
   protected readonly form = signal<any>(null);
   protected readonly error = signal('');
@@ -138,8 +175,7 @@ export class CrudPage implements OnInit {
       refs: refPaths.length ? forkJoin(Object.fromEntries(refPaths.map((p) => [p, this.http.get<any[]>(`/api/${p}`)]))) : of({}),
     }).subscribe({
       next: ({ rows, refs }) => {
-        const key = c.sortBy;
-        this.rows.set(key ? rows.sort((a, b) => (a[key] < b[key] ? 1 : -1)) : rows);
+        this.loaded.set(rows);
         this.refs.set(refs as Record<string, any[]>);
         this.error.set('');
       },
