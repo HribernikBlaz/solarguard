@@ -18,7 +18,6 @@ export interface RegisterData {
 
 const KEY = 'solarguard.session';
 
-// shortcut: žeton v localStorage (dosegljiv skriptam na strani), ko bo kaj občutljivejšega, preidi na httpOnly piškotek
 function load(): Session | null {
   try {
     const s: Session | null = JSON.parse(localStorage.getItem(KEY) ?? 'null');

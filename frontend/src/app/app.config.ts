@@ -1,8 +1,9 @@
 import { registerLocaleData } from '@angular/common';
 import localeSl from '@angular/common/locales/sl';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { authInterceptor } from './auth-http';
 import { routes } from './app.routes';
 
 registerLocaleData(localeSl);
@@ -10,7 +11,7 @@ registerLocaleData(localeSl);
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
     provideRouter(routes, withComponentInputBinding()),
     { provide: LOCALE_ID, useValue: 'sl' },
   ],
