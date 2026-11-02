@@ -16,6 +16,10 @@ Platforma za nadzor proizvodnje sončnih elektrarn v gospodinjstvih. Primerja de
 docker compose up
 ```
 
+V `.env` ob `docker-compose.yml` nastavi `JWT_KEY` (naključen niz, vsaj 32 znakov). Prvega admina ustvarita neobvezna `ADMIN_EMAIL` in `ADMIN_PASSWORD` (ustvari se ob zagonu, če admina še ni).
+
+Če baza že obstaja, za nove tabele (Identity) se požene samo razlika: `dotnet ef migrations script <prejšnja migracija> Identity`. Nova baza uporabi celoten `backend/SolarGuard.Api/Migrations/init.sql`.
+
 ## Dokumentacija
 
 - [01 Zasnova rešitve](docs/01-zasnova-resitve.md)
