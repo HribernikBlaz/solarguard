@@ -6,11 +6,11 @@ INSERT INTO "Installations" ("Id", "Name", "Address", "Latitude", "Longitude", "
   ('11111111-1111-1111-1111-111111111111', 'Hiša Novak', 'Cesta v Mestni log 10, Ljubljana', 46.034500, 14.489200, '2023-05-12', 8.40),
   ('22222222-2222-2222-2222-222222222222', 'Kmetija Kovač', 'Pohorska ulica 5, Maribor', 46.554700, 15.645900, '2022-08-03', 12.60);
 
-INSERT INTO "Devices" ("Id", "InstallationId", "Type", "Manufacturer", "Model", "SerialNumber", "WarrantyUntil") VALUES
-  ('aaaaaaaa-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Panel', 'JA Solar', 'JAM54S30-420', 'JA-2305-0142', '2035-05-12'),
-  ('aaaaaaaa-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'Inverter', 'Fronius', 'Primo 8.2-1', 'FR-2305-7781', '2028-05-12'),
-  ('aaaaaaaa-0000-0000-0000-000000000003', '22222222-2222-2222-2222-222222222222', 'Panel', 'Trina Solar', 'Vertex S 425', 'TR-2208-3320', '2034-08-03'),
-  ('aaaaaaaa-0000-0000-0000-000000000004', '22222222-2222-2222-2222-222222222222', 'Inverter', 'SMA', 'Sunny Tripower 12', 'SMA-2208-5516', '2026-11-20');
+INSERT INTO "Devices" ("Id", "InstallationId", "Type", "Manufacturer", "Model", "SerialNumber", "InstalledOn", "WarrantyUntil") VALUES
+  ('aaaaaaaa-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Panel', 'JA Solar', 'JAM54S30-420', 'JA-2305-0142', '2023-05-12', '2035-05-12'),
+  ('aaaaaaaa-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'Inverter', 'Fronius', 'Primo 8.2-1', 'FR-2305-7781', '2023-05-12', '2028-05-12'),
+  ('aaaaaaaa-0000-0000-0000-000000000003', '22222222-2222-2222-2222-222222222222', 'Panel', 'Trina Solar', 'Vertex S 425', 'TR-2208-3320', '2022-08-03', '2034-08-03'),
+  ('aaaaaaaa-0000-0000-0000-000000000004', '22222222-2222-2222-2222-222222222222', 'Inverter', 'SMA', 'Sunny Tripower 12', 'SMA-2208-5516', '2022-08-03', '2026-11-20');
 
 INSERT INTO "Measurements" ("Id", "DeviceId", "Timestamp", "ProductionKwh", "Temperature", "HasError")
 SELECT
