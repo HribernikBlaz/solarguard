@@ -1,0 +1,39 @@
+services:
+  solarguard-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: solarguard
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./backend/SolarGuard.Api/Migrations/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./backend/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d solarguard"]
+      interval: 3s
+      retries: 20
+
+  solarguard-api:
+    build: ./backend/SolarGuard.Api
+    depends_on:
+      solarguard-db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Default: Host=solarguard-db;Port=5432;Database=solarguard;Username=postgres;Password=postgres
+      Jwt__Key: samo-za-lokalni-razvoj-0123456789-0123456789
+      Admin__Email: admin@solarguard.local
+      Admin__Password: Admin12345
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  solarguard-web:
+    build: ./frontend
+    depends_on:
+      - solarguard-api
+    ports:
+      - "127.0.0.1:4200:80"
+
+volumes:
+  db-data:
