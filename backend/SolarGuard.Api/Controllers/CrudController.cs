@@ -21,13 +21,18 @@ public abstract class CrudController<T>(AppDbContext db) : ControllerBase where 
 
     protected IQueryable<Installation> OwnInstallations()
     {
+        if (IsAdmin)
+            return db.Installations;
+
         var uid = UserId;
-        return IsAdmin ? db.Installations : db.Installations.Where(i => i.OwnerId == uid);
+
+        return db.Installations.Where(i => i.OwnerId == uid);
     }
 
     protected IQueryable<Device> OwnDevices()
     {
         var own = OwnInstallations();
+
         return db.Devices.Where(d => own.Any(i => i.Id == d.InstallationId));
     }
 
@@ -38,7 +43,10 @@ public abstract class CrudController<T>(AppDbContext db) : ControllerBase where 
     public async Task<ActionResult<T>> Get(Guid id)
     {
         var item = await Visible().AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
-        return item is null ? NotFound() : item;
+        if (item is null)
+            return NotFound();
+
+        return item;
     }
 
     [HttpPost]
@@ -47,9 +55,11 @@ public abstract class CrudController<T>(AppDbContext db) : ControllerBase where 
         item.Id = Guid.NewGuid();
         if (await Prepare(item, null) is { } error)
             return BadRequest(error);
+
         db.Add(item);
         if (!await TrySave())
             return BadRequest(SaveError);
+
         return CreatedAtAction(nameof(Get), new { id = item.Id }, item);
     }
 
@@ -57,10 +67,13 @@ public abstract class CrudController<T>(AppDbContext db) : ControllerBase where 
     public async Task<IActionResult> Update(Guid id, T item)
     {
         var existing = await Visible().FirstOrDefaultAsync(e => e.Id == id);
-        if (existing is null) return NotFound();
+        if (existing is null)
+            return NotFound();
+
         item.Id = id;
         if (await Prepare(item, existing) is { } error)
             return BadRequest(error);
+
         db.Entry(existing).CurrentValues.SetValues(item);
         if (!await TrySave())
             return BadRequest(SaveError);
@@ -74,6 +87,7 @@ public abstract class CrudController<T>(AppDbContext db) : ControllerBase where 
         var existing = await Visible().FirstOrDefaultAsync(e => e.Id == id);
         if (existing is null)
             return NotFound();
+
         db.Remove(existing);
         await db.SaveChangesAsync();
 
@@ -87,6 +101,7 @@ public abstract class CrudController<T>(AppDbContext db) : ControllerBase where 
         try
         {
             await db.SaveChangesAsync();
+
             return true;
         }
         catch (DbUpdateException)

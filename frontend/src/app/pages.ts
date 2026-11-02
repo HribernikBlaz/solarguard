@@ -10,9 +10,9 @@ export interface PageConfig {
   title: string;
   path: string;
   fields: Field[];
-  sortBy?: string; // privzeto od najnovejšega; uporabnik lahko obrne vrstni red
+  sortBy?: string;
   filter?: { key: string; label: string; options: string[] };
-  detail?: string; // pot strani s podrobnostmi, doda povezavo v vrstici
+  detail?: string;
   empty: () => Record<string, unknown>;
 }
 

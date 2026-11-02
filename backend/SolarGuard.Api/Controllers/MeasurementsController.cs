@@ -12,11 +12,18 @@ public class MeasurementsController(AppDbContext db) : CrudController<Measuremen
     {
         if (IsAdmin)
             return Db.Measurements;
+
         var own = OwnDevices();
 
         return Db.Measurements.Where(m => own.Any(d => d.Id == m.DeviceId));
     }
 
-    protected override async Task<string?> Prepare(Measurement item, Measurement? existing) =>
-        await OwnDevices().AnyAsync(d => d.Id == item.DeviceId) ? null : "Neveljavna naprava.";
+    protected override async Task<string?> Prepare(Measurement item, Measurement? existing)
+    {
+        var deviceIsVisible = await OwnDevices().AnyAsync(d => d.Id == item.DeviceId);
+        if (!deviceIsVisible)
+            return "Neveljavna naprava.";
+
+        return null;
+    }
 }

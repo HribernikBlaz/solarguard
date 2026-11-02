@@ -11,7 +11,11 @@ public class InstallationsController(AppDbContext db) : CrudController<Installat
 
     protected override Task<string?> Prepare(Installation item, Installation? existing)
     {
-        item.OwnerId = existing is null ? (IsAdmin ? item.OwnerId : null) ?? UserId : existing.OwnerId;
+        if (existing is not null)
+            item.OwnerId = existing.OwnerId;
+        else if (!IsAdmin || item.OwnerId is null)
+            item.OwnerId = UserId;
+
         return Task.FromResult<string?>(null);
     }
 }
