@@ -52,6 +52,15 @@ header {
   }
 }
 
+.shell.bare {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.auth {
+  max-width: 24rem;
+  margin: 2rem auto;
+}
+
 @media (max-width: 760px) {
   .shell {
     grid-template-columns: minmax(0, 1fr);

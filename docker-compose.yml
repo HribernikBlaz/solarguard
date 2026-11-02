@@ -7,6 +7,9 @@ services:
       - "127.0.0.1:8080:8080"
     environment:
       ConnectionStrings__Default: Host=solarguard-db;Port=26257;Database=solarguard;Username=root;SSL Mode=Disable
+      Jwt__Key: ${JWT_KEY:?JWT_KEY mora biti nastavljen v .env}
+      Admin__Email: ${ADMIN_EMAIL:-}
+      Admin__Password: ${ADMIN_PASSWORD:-}
     networks:
       - solarguard-net
 

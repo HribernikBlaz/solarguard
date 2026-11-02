@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SolarGuard.Api.Models;
 
 namespace SolarGuard.Api.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options)
+    : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>(options)
 {
     public DbSet<Installation> Installations => Set<Installation>();
     public DbSet<Device> Devices => Set<Device>();
@@ -11,6 +14,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        base.OnModelCreating(b);
+        b.Entity<IdentityRole<Guid>>().HasData(AppRoles.All.Select((name, i) => new IdentityRole<Guid>
+        {
+            Id = Guid.Parse($"00000000-0000-0000-0000-00000000000{i + 1}"),
+            Name = name,
+            NormalizedName = name.ToUpperInvariant(),
+            ConcurrencyStamp = $"role-{i + 1}",
+        }));
         b.Entity<Installation>().HasMany<Device>().WithOne().HasForeignKey(d => d.InstallationId);
         b.Entity<Device>().HasMany<Measurement>().WithOne().HasForeignKey(m => m.DeviceId);
         b.Entity<Device>().Property(d => d.Type).HasConversion<string>();
