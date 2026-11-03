@@ -1,10 +1,12 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { EMPTY, catchError, switchMap, timer } from 'rxjs';
 import { ChartComponent } from './chart';
 import { Overview, SolarData } from './data';
-import { CENA_KWH, HOUR, dayKey, sumByDay } from './rules';
+import { CENA_KWH, Period, dayKey, productionSeries, sumByDay } from './rules';
 
 @Component({
   selector: 'app-dashboard',
@@ -50,11 +52,19 @@ import { CENA_KWH, HOUR, dayKey, sumByDay } from './rules';
           <div class="seg">
             <button type="button" [class.on]="period() === 'dan'" (click)="period.set('dan')">Dan</button>
             <button type="button" [class.on]="period() === 'teden'" (click)="period.set('teden')">Teden</button>
-            <button type="button" disabled title="Za mesec in leto ni dovolj zgodovine meritev">Mesec</button>
-            <button type="button" disabled title="Za mesec in leto ni dovolj zgodovine meritev">Leto</button>
+            <button type="button" [class.on]="period() === 'mesec'" (click)="period.set('mesec')">Mesec</button>
+            <button type="button" [class.on]="period() === 'leto'" (click)="period.set('leto')">Leto</button>
           </div>
         </div>
-        <app-chart [labels]="series().labels" [bars]="series().bars" [line]="series().line" barsLabel="Dejansko" lineLabel="Pričakovano (napoved)" />
+        <app-chart
+          [labels]="series().labels"
+          [titles]="series().titles"
+          [bars]="series().bars"
+          [line]="series().line"
+          barsLabel="Dejansko"
+          lineLabel="Pričakovano (napoved)"
+          emptyText="Ni podatkov za izbrano obdobje"
+        />
       </section>
     }
 
@@ -81,10 +91,12 @@ import { CENA_KWH, HOUR, dayKey, sumByDay } from './rules';
 export class Dashboard implements OnInit {
   protected readonly overviews = signal<Overview[]>([]);
   protected readonly selectedId = signal('');
-  protected readonly period = signal<'dan' | 'teden'>('dan');
+  protected readonly period = signal<Period>('dan');
   protected readonly error = signal('');
   protected readonly cena = CENA_KWH;
+  private readonly now = signal(Date.now());
   private readonly data = inject(SolarData);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly sel = computed(() => this.overviews().find((o) => o.inst.id === this.selectedId()));
 
@@ -98,36 +110,34 @@ export class Dashboard implements OnInit {
   protected readonly todayKwh = computed(() => sumByDay(this.sel()?.actual ?? []).get(dayKey(Date.now())) ?? 0);
   protected readonly savings = computed(() => this.todayKwh() * CENA_KWH);
 
-  // primerjava samo čez ure, ki imajo meritev, da delni današnji dan ni popačen
   protected readonly series = computed(() => {
     const o = this.sel();
-    const times = [...(o?.actual.keys() ?? [])].sort((a, b) => a - b);
-    if (!o || !times.length) return { labels: [], bars: [], line: [] };
-    if (this.period() === 'dan') {
-      const hours = times.filter((t) => t > times.at(-1)! - 24 * HOUR);
-      return {
-        labels: hours.map((t) => `${new Date(t).getHours()}:00`),
-        bars: hours.map((t) => o.actual.get(t)!),
-        line: hours.map((t) => o.expected.get(t) ?? 0),
-      };
+    if (!o) {
+      return { labels: [], titles: [], bars: [], line: [] };
     }
-    const actual = sumByDay(o.actual);
-    const expected = sumByDay(times.map((t): [number, number] => [t, o.expected.get(t) ?? 0]));
-    const days = [...actual.keys()].sort().slice(-7);
-    return {
-      labels: days.map((d) => `${+d.slice(8)}.${+d.slice(5, 7)}.`),
-      bars: days.map((d) => actual.get(d)!),
-      line: days.map((d) => expected.get(d) ?? 0),
-    };
+
+    return productionSeries(this.period(), this.now(), o.actual, o.expected);
   });
 
   ngOnInit() {
-    this.data.overview().subscribe({
-      next: (os) => {
+    timer(0, 30_000)
+      .pipe(
+        switchMap(() => this.data.overview().pipe(catchError((e) => this.fail(e)))),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((os) => {
+        this.error.set('');
+        this.now.set(Date.now());
         this.overviews.set(os);
-        this.selectedId.set(os[0]?.inst.id ?? '');
-      },
-      error: (e) => this.error.set(`Napaka ${e.status}`),
-    });
+        if (!os.some((o) => o.inst.id === this.selectedId())) {
+          this.selectedId.set(os[0]?.inst.id ?? '');
+        }
+      });
+  }
+
+  private fail(e: { status?: number }) {
+    this.error.set(`Napaka ${e.status}`);
+
+    return EMPTY;
   }
 }
