@@ -73,7 +73,7 @@
       <app-alarm-list [installationId]="id()" />
     }
     @case ('nalogi') {
-      <app-placeholder title="Servisni nalogi" text="Servisni nalogi še niso implementirani (v bazi ni tabele). Ob kritičnem alarmu bo tu ustvarjen nalog." />
+      <app-service-order-list [installationId]="id()" />
     }
   }
 }

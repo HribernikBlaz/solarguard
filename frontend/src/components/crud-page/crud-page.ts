@@ -4,6 +4,7 @@ import { Component, OnInit, computed, inject, input, signal } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
+import { AuthService } from '../../services/auth-service';
 import { Field } from '../../shared/models/field';
 import { PageConfig } from '../../shared/models/page-config';
 import { fromLocalInput, toLocalInput } from '../../shared/utils/datetime';
@@ -36,9 +37,12 @@ export class CrudPage implements OnInit {
   protected readonly refs = signal<Record<string, any[]>>({});
   protected readonly form = signal<any>(null);
   protected readonly error = signal('');
+  protected readonly fields = computed(() => this.config().fields.filter((f) => !f.adminOnly || this.isAdmin()));
   protected readonly toLocal = toLocalInput;
   protected readonly fromLocal = (v: string) => (v ? fromLocalInput(v) : '');
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
+  private readonly isAdmin = computed(() => this.auth.session()?.role === 'Admin');
 
   ngOnInit() {
     this.load();
@@ -51,8 +55,7 @@ export class CrudPage implements OnInit {
   private fail = (e: any) => this.error.set(typeof e.error === 'string' && e.error ? e.error : `Napaka ${e.status}`);
 
   private load() {
-    const c = this.config();
-    const refPaths = [...new Set(c.fields.flatMap((f) => (f.ref ? [f.ref.path] : [])))];
+    const refPaths = [...new Set(this.fields().flatMap((f) => (f.ref ? [f.ref.path] : [])))];
     forkJoin({
       rows: this.http.get<any[]>(this.url()),
       refs: refPaths.length ? forkJoin(Object.fromEntries(refPaths.map((p) => [p, this.http.get<any[]>(`/api/${p}`)]))) : of({}),
@@ -70,6 +73,9 @@ export class CrudPage implements OnInit {
     const ref = f.ref;
     if (!ref) {
       return row[f.key];
+    }
+    if (!row[f.key]) {
+      return '–';
     }
 
     const target = this.refs()[ref.path]?.find((r) => r.id === row[f.key]);

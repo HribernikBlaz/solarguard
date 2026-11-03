@@ -4,7 +4,7 @@ using SolarGuard.Api.Models;
 
 namespace SolarGuard.Api.Services;
 
-public class AlarmDetector(AppDbContext db, OpenMeteoClient openMeteo, ILogger<AlarmDetector> logger)
+public class AlarmDetector(AppDbContext db, OpenMeteoClient openMeteo, IConfiguration configuration, ILogger<AlarmDetector> logger)
 {
     private readonly record struct Check(bool Evaluated, AlarmSeverity? Severity, string Description);
 
@@ -14,11 +14,28 @@ public class AlarmDetector(AppDbContext db, OpenMeteoClient openMeteo, ILogger<A
     public async Task Run(DateTime now)
     {
         var installations = await db.Installations.AsNoTracking().ToListAsync();
+        var fallbackAdminId = await FindAdminId();
         foreach (var installation in installations)
-            await CheckInstallation(installation, now);
+            await CheckInstallation(installation, now, fallbackAdminId);
     }
 
-    private async Task CheckInstallation(Installation installation, DateTime now)
+    private async Task<Guid?> FindAdminId()
+    {
+        var admins = await (from u in db.Users
+                            join ur in db.UserRoles on u.Id equals ur.UserId
+                            join r in db.Roles on ur.RoleId equals r.Id
+                            where r.Name == AppRoles.Admin
+                            orderby u.Email
+                            select new { u.Id, u.Email })
+            .AsNoTracking()
+            .ToListAsync();
+        var configuredEmail = configuration["Admin:Email"];
+        var configured = admins.FirstOrDefault(a => string.Equals(a.Email, configuredEmail, StringComparison.OrdinalIgnoreCase));
+
+        return configured?.Id ?? admins.FirstOrDefault()?.Id;
+    }
+
+    private async Task CheckInstallation(Installation installation, DateTime now, Guid? fallbackAdminId)
     {
         var devices = await db.Devices.AsNoTracking().Where(d => d.InstallationId == installation.Id).ToListAsync();
         if (devices.Count == 0)
@@ -41,15 +58,16 @@ public class AlarmDetector(AppDbContext db, OpenMeteoClient openMeteo, ILogger<A
         var irradiance = await LoadIrradiance(installation);
         var panelCount = devices.Count(d => d.Type == DeviceType.Panel);
         var active = await db.Alarms.Where(a => deviceIds.Contains(a.DeviceId) && a.Status == AlarmStatus.Active).ToListAsync();
+        var assigneeId = installation.TechnicianId ?? fallbackAdminId;
 
         foreach (var device in devices)
         {
             DateTime? last = lastMeasurements.TryGetValue(device.Id, out var timestamp) ? timestamp : null;
             var missing = AlarmRules.IsMissing(last, device.InstalledOn, now);
 
-            Sync(device, AlarmType.MissingMeasurements, MissingCheck(missing, last), active, now);
+            Sync(device, installation, assigneeId, AlarmType.MissingMeasurements, MissingCheck(missing, last), active, now);
             if (device.Type == DeviceType.Panel)
-                Sync(device, AlarmType.LowProduction, missing ? NotEvaluated : LowProductionCheck(device, last, recent, irradiance, installation, panelCount), active, now);
+                Sync(device, installation, assigneeId, AlarmType.LowProduction, missing ? NotEvaluated : LowProductionCheck(device, last, recent, irradiance, installation, panelCount), active, now);
         }
 
         try
@@ -117,7 +135,7 @@ public class AlarmDetector(AppDbContext db, OpenMeteoClient openMeteo, ILogger<A
         return new(true, severity, $"Proizvodnja je že {AlarmRules.ConsecutiveHours} ure zapored v povprečju {deviation:F0} % pod pričakovano.");
     }
 
-    private void Sync(Device device, AlarmType type, Check check, List<Alarm> active, DateTime now)
+    private void Sync(Device device, Installation installation, Guid? assigneeId, AlarmType type, Check check, List<Alarm> active, DateTime now)
     {
         if (!check.Evaluated)
             return;
@@ -144,5 +162,25 @@ public class AlarmDetector(AppDbContext db, OpenMeteoClient openMeteo, ILogger<A
         };
         db.Alarms.Add(created);
         active.Add(created);
+
+        if (severity == AlarmSeverity.Critical)
+            CreateServiceOrder(created, device, installation, assigneeId, now);
+    }
+
+    private void CreateServiceOrder(Alarm alarm, Device device, Installation installation, Guid? assigneeId, DateTime now)
+    {
+        if (assigneeId is null)
+            logger.LogWarning("Za sistem {Installation} ni serviserja ne administratorja, nalog ostane nedodeljen", installation.Name);
+
+        db.ServiceOrders.Add(new ServiceOrder
+        {
+            Id = Guid.NewGuid(),
+            AlarmId = alarm.Id,
+            InstallationId = installation.Id,
+            AssigneeId = assigneeId,
+            Status = ServiceOrderStatus.Open,
+            Description = $"{device.Type} {device.SerialNumber}: {alarm.Description}",
+            CreatedAt = now,
+        });
     }
 }

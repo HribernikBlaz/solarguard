@@ -1,0 +1,26 @@
+@if (!installationId()) {
+  <h1>Servisni nalogi</h1>
+}
+@if (service.failed() && !service.loaded()) {
+  <p class="error">Servisnih nalogov ni mogoče naložiti.</p>
+}
+<table>
+  <thead>
+    <tr><th>Sistem</th><th>Naprava</th><th>Resnost</th><th>Opis</th><th>Dodeljeno</th><th>Status</th><th>Ustvarjen</th></tr>
+  </thead>
+  <tbody>
+    @for (o of rows(); track o.id) {
+      <tr>
+        <td><a [routerLink]="['/sistemi', o.installationId]">{{ o.installationName }}</a></td>
+        <td>{{ o.deviceType }} {{ o.serialNumber }}</td>
+        <td><span class="badge" [attr.data-status]="severityLabels[o.severity]">{{ severityLabels[o.severity] }}</span></td>
+        <td>{{ o.description }}</td>
+        <td>{{ o.assigneeName ?? 'ni dodeljen' }}</td>
+        <td>{{ statusLabels[o.status] }}</td>
+        <td>{{ o.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+      </tr>
+    } @empty {
+      <tr><td colspan="7">{{ service.loaded() ? 'Ni servisnih nalogov.' : 'Nalagam ...' }}</td></tr>
+    }
+  </tbody>
+</table>

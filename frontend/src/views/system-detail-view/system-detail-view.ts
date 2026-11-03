@@ -4,14 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AlarmList } from '../../components/alarm-list/alarm-list';
 import { ForecastCard } from '../../components/forecast-card/forecast-card';
-import { Placeholder } from '../../components/placeholder/placeholder';
+import { ServiceOrderList } from '../../components/service-order-list/service-order-list';
 import { Overview } from '../../services/dtos/overview';
 import { SolarDataService } from '../../services/solar-data-service';
 import { TABS } from '../../shared/constants/system-tabs';
 
 @Component({
   selector: 'app-system-detail-view',
-  imports: [DatePipe, DecimalPipe, FormsModule, RouterLink, AlarmList, ForecastCard, Placeholder],
+  imports: [DatePipe, DecimalPipe, FormsModule, RouterLink, AlarmList, ForecastCard, ServiceOrderList],
   templateUrl: './system-detail-view.html',
 })
 export class SystemDetailView implements OnInit {

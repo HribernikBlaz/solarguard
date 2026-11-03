@@ -191,3 +191,36 @@ VALUES ('20261103171204_Alarmi', '10.0.13');
 
 COMMIT;
 
+START TRANSACTION;
+ALTER TABLE "Installations" ADD "TechnicianId" uuid;
+
+CREATE TABLE "ServiceOrders" (
+    "Id" uuid NOT NULL,
+    "AlarmId" uuid NOT NULL,
+    "InstallationId" uuid NOT NULL,
+    "AssigneeId" uuid,
+    "Status" text NOT NULL,
+    "Description" text NOT NULL,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "ClosedAt" timestamp with time zone,
+    CONSTRAINT "PK_ServiceOrders" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_ServiceOrders_Alarms_AlarmId" FOREIGN KEY ("AlarmId") REFERENCES "Alarms" ("Id") ON DELETE CASCADE,
+    CONSTRAINT "FK_ServiceOrders_AspNetUsers_AssigneeId" FOREIGN KEY ("AssigneeId") REFERENCES "AspNetUsers" ("Id") ON DELETE RESTRICT,
+    CONSTRAINT "FK_ServiceOrders_Installations_InstallationId" FOREIGN KEY ("InstallationId") REFERENCES "Installations" ("Id") ON DELETE CASCADE
+);
+
+CREATE INDEX "IX_Installations_TechnicianId" ON "Installations" ("TechnicianId");
+
+CREATE UNIQUE INDEX "IX_ServiceOrders_AlarmId" ON "ServiceOrders" ("AlarmId");
+
+CREATE INDEX "IX_ServiceOrders_AssigneeId_Status" ON "ServiceOrders" ("AssigneeId", "Status");
+
+CREATE INDEX "IX_ServiceOrders_InstallationId" ON "ServiceOrders" ("InstallationId");
+
+ALTER TABLE "Installations" ADD CONSTRAINT "FK_Installations_AspNetUsers_TechnicianId" FOREIGN KEY ("TechnicianId") REFERENCES "AspNetUsers" ("Id") ON DELETE RESTRICT;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20261103203829_ServisniNalogi', '10.0.13');
+
+COMMIT;
+

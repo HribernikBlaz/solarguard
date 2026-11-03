@@ -12,6 +12,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Device> Devices => Set<Device>();
     public DbSet<Measurement> Measurements => Set<Measurement>();
     public DbSet<Alarm> Alarms => Set<Alarm>();
+    public DbSet<ServiceOrder> ServiceOrders => Set<ServiceOrder>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -24,6 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             ConcurrencyStamp = $"role-{i + 1}",
         }));
         b.Entity<Installation>().HasOne<AppUser>().WithMany().HasForeignKey(i => i.OwnerId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<Installation>().HasOne<AppUser>().WithMany().HasForeignKey(i => i.TechnicianId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<Device>().HasIndex(d => new { d.InstallationId, d.SerialNumber }).IsUnique();
         b.Entity<Installation>().HasMany<Device>().WithOne().HasForeignKey(d => d.InstallationId);
         b.Entity<Device>().HasMany<Measurement>().WithOne().HasForeignKey(m => m.DeviceId);
@@ -33,6 +35,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         b.Entity<Alarm>().Property(a => a.Severity).HasConversion<string>();
         b.Entity<Alarm>().Property(a => a.Status).HasConversion<string>();
         b.Entity<Alarm>().HasIndex(a => new { a.DeviceId, a.DetectedAt });
+        b.Entity<ServiceOrder>().HasOne<Alarm>().WithMany().HasForeignKey(o => o.AlarmId);
+        b.Entity<ServiceOrder>().HasOne<Installation>().WithMany().HasForeignKey(o => o.InstallationId);
+        b.Entity<ServiceOrder>().HasOne<AppUser>().WithMany().HasForeignKey(o => o.AssigneeId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<ServiceOrder>().Property(o => o.Status).HasConversion<string>();
+        b.Entity<ServiceOrder>().HasIndex(o => o.AlarmId).IsUnique();
+        b.Entity<ServiceOrder>().HasIndex(o => new { o.AssigneeId, o.Status });
         b.Entity<Alarm>().HasIndex(a => new { a.DeviceId, a.Type, a.Severity }).IsUnique().HasFilter("\"Status\" = 'Active'");
         b.Entity<Installation>().Property(i => i.Latitude).HasPrecision(9, 6);
         b.Entity<Installation>().Property(i => i.Longitude).HasPrecision(9, 6);

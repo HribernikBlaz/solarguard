@@ -1,3 +1,4 @@
+DELETE FROM "ServiceOrders";
 DELETE FROM "Alarms";
 DELETE FROM "Measurements";
 DELETE FROM "Devices";

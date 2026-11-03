@@ -19,7 +19,7 @@ export const routes: Routes = [
       { path: 'sistemi/:id', loadComponent: () => import('../views/system-detail-view/system-detail-view').then((m) => m.SystemDetailView) },
       { path: 'naprave', component: CrudPage, data: { config: DEVICES } },
       { path: 'meritve', component: CrudPage, data: { config: MEASUREMENTS } },
-      { path: 'servisni-nalogi', loadComponent: () => import('../components/placeholder/placeholder').then((m) => m.Placeholder), data: { title: 'Servisni nalogi', text: 'Servisni nalogi še niso implementirani (v bazi ni tabele).' } },
+      { path: 'servisni-nalogi', loadComponent: () => import('../components/service-order-list/service-order-list').then((m) => m.ServiceOrderList) },
       { path: 'porocila', loadComponent: () => import('../components/placeholder/placeholder').then((m) => m.Placeholder), data: { title: 'Poročila', text: 'Izvoz poročil (PDF/CSV) še ni implementiran.' } },
       { path: 'nastavitve', loadComponent: () => import('../components/placeholder/placeholder').then((m) => m.Placeholder), data: { title: 'Nastavitve', text: 'Nastavitve (cena elektrike, pragovi alarmov) še niso implementirane.' } },
     ],

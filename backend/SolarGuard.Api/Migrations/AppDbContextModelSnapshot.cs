@@ -361,9 +361,14 @@ namespace SolarGuard.Api.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
+                    b.Property<Guid?>("TechnicianId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OwnerId");
+
+                    b.HasIndex("TechnicianId");
 
                     b.ToTable("Installations");
                 });
@@ -396,6 +401,47 @@ namespace SolarGuard.Api.Migrations
                     b.HasIndex("DeviceId", "Timestamp");
 
                     b.ToTable("Measurements");
+                });
+
+            modelBuilder.Entity("SolarGuard.Api.Models.ServiceOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AlarmId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AssigneeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("InstallationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlarmId")
+                        .IsUnique();
+
+                    b.HasIndex("InstallationId");
+
+                    b.HasIndex("AssigneeId", "Status");
+
+                    b.ToTable("ServiceOrders");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -473,6 +519,11 @@ namespace SolarGuard.Api.Migrations
                         .WithMany()
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SolarGuard.Api.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("TechnicianId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("SolarGuard.Api.Models.Measurement", b =>
@@ -480,6 +531,26 @@ namespace SolarGuard.Api.Migrations
                     b.HasOne("SolarGuard.Api.Models.Device", null)
                         .WithMany()
                         .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SolarGuard.Api.Models.ServiceOrder", b =>
+                {
+                    b.HasOne("SolarGuard.Api.Models.Alarm", null)
+                        .WithMany()
+                        .HasForeignKey("AlarmId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SolarGuard.Api.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("AssigneeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SolarGuard.Api.Models.Installation", null)
+                        .WithMany()
+                        .HasForeignKey("InstallationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
