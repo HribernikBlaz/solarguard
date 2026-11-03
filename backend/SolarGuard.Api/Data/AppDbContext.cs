@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Installation> Installations => Set<Installation>();
     public DbSet<Device> Devices => Set<Device>();
     public DbSet<Measurement> Measurements => Set<Measurement>();
+    public DbSet<Alarm> Alarms => Set<Alarm>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -26,7 +27,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         b.Entity<Device>().HasIndex(d => new { d.InstallationId, d.SerialNumber }).IsUnique();
         b.Entity<Installation>().HasMany<Device>().WithOne().HasForeignKey(d => d.InstallationId);
         b.Entity<Device>().HasMany<Measurement>().WithOne().HasForeignKey(m => m.DeviceId);
+        b.Entity<Device>().HasMany<Alarm>().WithOne().HasForeignKey(a => a.DeviceId);
         b.Entity<Device>().Property(d => d.Type).HasConversion<string>();
+        b.Entity<Alarm>().Property(a => a.Type).HasConversion<string>();
+        b.Entity<Alarm>().Property(a => a.Severity).HasConversion<string>();
+        b.Entity<Alarm>().Property(a => a.Status).HasConversion<string>();
+        b.Entity<Alarm>().HasIndex(a => new { a.DeviceId, a.DetectedAt });
+        b.Entity<Alarm>().HasIndex(a => new { a.DeviceId, a.Type, a.Severity }).IsUnique().HasFilter("\"Status\" = 'Active'");
         b.Entity<Installation>().Property(i => i.Latitude).HasPrecision(9, 6);
         b.Entity<Installation>().Property(i => i.Longitude).HasPrecision(9, 6);
         b.Entity<Installation>().Property(i => i.RatedPowerKw).HasPrecision(10, 2);

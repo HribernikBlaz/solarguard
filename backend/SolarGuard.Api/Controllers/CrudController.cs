@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SolarGuard.Api.Data;
@@ -7,34 +5,11 @@ using SolarGuard.Api.Models;
 
 namespace SolarGuard.Api.Controllers;
 
-[ApiController]
-[Authorize]
-public abstract class CrudController<T>(AppDbContext db) : ControllerBase where T : Entity
+public abstract class CrudController<T>(AppDbContext db) : OwnedController(db) where T : Entity
 {
-    protected AppDbContext Db => db;
-    protected Guid UserId => Guid.Parse(User.FindFirstValue("sub")!);
-    protected bool IsAdmin => User.IsInRole(AppRoles.Admin);
-
     protected abstract IQueryable<T> Visible();
 
     protected virtual Task<string?> Prepare(T item, T? existing) => Task.FromResult<string?>(null);
-
-    protected IQueryable<Installation> OwnInstallations()
-    {
-        if (IsAdmin)
-            return db.Installations;
-
-        var uid = UserId;
-
-        return db.Installations.Where(i => i.OwnerId == uid);
-    }
-
-    protected IQueryable<Device> OwnDevices()
-    {
-        var own = OwnInstallations();
-
-        return db.Devices.Where(d => own.Any(i => i.Id == d.InstallationId));
-    }
 
     [HttpGet]
     public async Task<ActionResult<List<T>>> GetAll() => await Visible().AsNoTracking().ToListAsync();
@@ -56,7 +31,7 @@ public abstract class CrudController<T>(AppDbContext db) : ControllerBase where 
         if (await Prepare(item, null) is { } error)
             return BadRequest(error);
 
-        db.Add(item);
+        Db.Add(item);
         if (!await TrySave())
             return BadRequest(SaveError);
 
@@ -74,7 +49,7 @@ public abstract class CrudController<T>(AppDbContext db) : ControllerBase where 
         if (await Prepare(item, existing) is { } error)
             return BadRequest(error);
 
-        db.Entry(existing).CurrentValues.SetValues(item);
+        Db.Entry(existing).CurrentValues.SetValues(item);
         if (!await TrySave())
             return BadRequest(SaveError);
 
@@ -88,8 +63,8 @@ public abstract class CrudController<T>(AppDbContext db) : ControllerBase where 
         if (existing is null)
             return NotFound();
 
-        db.Remove(existing);
-        await db.SaveChangesAsync();
+        Db.Remove(existing);
+        await Db.SaveChangesAsync();
 
         return NoContent();
     }
@@ -100,7 +75,7 @@ public abstract class CrudController<T>(AppDbContext db) : ControllerBase where 
     {
         try
         {
-            await db.SaveChangesAsync();
+            await Db.SaveChangesAsync();
 
             return true;
         }

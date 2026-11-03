@@ -168,3 +168,26 @@ VALUES ('20261102195325_LastnikSistemaInDatumNamestitve', '10.0.13');
 
 COMMIT;
 
+START TRANSACTION;
+CREATE TABLE "Alarms" (
+    "Id" uuid NOT NULL,
+    "DeviceId" uuid NOT NULL,
+    "Type" text NOT NULL,
+    "Severity" text NOT NULL,
+    "Status" text NOT NULL,
+    "DetectedAt" timestamp with time zone NOT NULL,
+    "ResolvedAt" timestamp with time zone,
+    "Description" text NOT NULL,
+    CONSTRAINT "PK_Alarms" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_Alarms_Devices_DeviceId" FOREIGN KEY ("DeviceId") REFERENCES "Devices" ("Id") ON DELETE CASCADE
+);
+
+CREATE INDEX "IX_Alarms_DeviceId_DetectedAt" ON "Alarms" ("DeviceId", "DetectedAt");
+
+CREATE UNIQUE INDEX "IX_Alarms_DeviceId_Type_Severity" ON "Alarms" ("DeviceId", "Type", "Severity") WHERE "Status" = 'Active';
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20261103171204_Alarmi', '10.0.13');
+
+COMMIT;
+
