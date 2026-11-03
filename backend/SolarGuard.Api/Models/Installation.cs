@@ -3,6 +3,7 @@ namespace SolarGuard.Api.Models;
 public class Installation : Entity
 {
     public Guid? OwnerId { get; set; }
+    public Guid? TechnicianId { get; set; }
     public string Name { get; set; } = "";
     public string Address { get; set; } = "";
     public decimal Latitude { get; set; }

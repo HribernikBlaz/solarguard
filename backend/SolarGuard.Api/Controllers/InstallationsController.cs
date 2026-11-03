@@ -11,15 +11,31 @@ public class InstallationsController(AppDbContext db, ProductionService producti
 {
     protected override IQueryable<Installation> Visible() => OwnInstallations();
 
-    protected override Task<string?> Prepare(Installation item, Installation? existing)
+    protected override async Task<string?> Prepare(Installation item, Installation? existing)
     {
         if (existing is not null)
             item.OwnerId = existing.OwnerId;
         else if (!IsAdmin || item.OwnerId is null)
             item.OwnerId = UserId;
 
-        return Task.FromResult<string?>(null);
+        if (!IsAdmin)
+        {
+            item.TechnicianId = existing?.TechnicianId;
+
+            return null;
+        }
+
+        if (item.TechnicianId is { } technicianId && !await IsTechnician(technicianId))
+            return "Izbrani uporabnik ni serviser.";
+
+        return null;
     }
+
+    private async Task<bool> IsTechnician(Guid userId) =>
+        await (from ur in Db.UserRoles
+               join r in Db.Roles on ur.RoleId equals r.Id
+               where ur.UserId == userId && r.Name == AppRoles.Technician
+               select ur).AnyAsync();
 
     [HttpGet("{id:guid}/production")]
     public async Task<ActionResult<ProductionComparison>> Production(Guid id, string period = "dan")
