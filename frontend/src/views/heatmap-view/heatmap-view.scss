@@ -1,0 +1,23 @@
+.scale {
+  align-items: center;
+
+  .ramp {
+    flex: 0 1 16rem;
+    height: 0.8rem;
+    border-radius: 2px;
+  }
+}
+
+.timebar {
+  margin-top: 1rem;
+
+  input[type='range'] {
+    width: 100%;
+    margin: 0.5rem 0;
+    accent-color: #eba51d;
+  }
+
+  .stats {
+    margin: 0.25rem 0 0;
+  }
+}

@@ -1,0 +1,30 @@
+@if (labels().length) {
+  <svg class="chart" [attr.viewBox]="'0 0 ' + W + ' ' + H" role="img" [attr.aria-label]="barsLabel()">
+    @for (g of grid(); track g.y) {
+      <line class="grid" [attr.x1]="pad.l" [attr.x2]="W - pad.r" [attr.y1]="g.y" [attr.y2]="g.y" />
+      <text class="tick" [attr.x]="pad.l - 6" [attr.y]="g.y + 4" text-anchor="end">{{ g.label }}</text>
+    }
+    @for (c of cols(); track c.i) {
+      <rect class="bar" [attr.x]="c.bx" [attr.y]="c.by" [attr.width]="c.bw" [attr.height]="c.bh" />
+      @if (c.show) {
+        <text class="tick" [attr.x]="c.cx" [attr.y]="H - 8" text-anchor="middle">{{ c.label }}</text>
+      }
+    }
+    @if (points()) {
+      <polyline class="line" [attr.points]="points()" />
+    }
+    @for (c of cols(); track c.i) {
+      <rect class="hit" [attr.x]="c.x" [attr.y]="pad.t" [attr.width]="c.w" [attr.height]="H - pad.t - pad.b">
+        <title>{{ c.tip }}</title>
+      </rect>
+    }
+  </svg>
+  <p class="legend">
+    <span><i class="sw bar"></i>{{ barsLabel() }}</span>
+    @if (line().length) {
+      <span><i class="sw line"></i>{{ lineLabel() }}</span>
+    }
+  </p>
+} @else {
+  <p class="placeholder">{{ emptyText() }}</p>
+}

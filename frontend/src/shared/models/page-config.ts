@@ -1,0 +1,11 @@
+import { Field } from './field';
+
+export interface PageConfig {
+  title: string;
+  path: string;
+  fields: Field[];
+  sortBy?: string;
+  filter?: { key: string; label: string; options: string[] };
+  detail?: string;
+  empty: () => Record<string, unknown>;
+}

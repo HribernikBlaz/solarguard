@@ -1,0 +1,26 @@
+<section class="auth">
+  <h1>Prijava</h1>
+  <form (ngSubmit)="submit()">
+    <label>
+      E-pošta
+      <input type="email" name="email" autocomplete="username" [(ngModel)]="email" required />
+    </label>
+    <label>
+      Geslo
+      <input
+        type="password"
+        name="password"
+        autocomplete="current-password"
+        [(ngModel)]="password"
+        required
+      />
+    </label>
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+    <div class="buttons">
+      <button type="submit" [disabled]="busy()">Prijava</button>
+    </div>
+  </form>
+  <p class="muted">Še nimaš računa? <a routerLink="/registracija">Registracija</a></p>
+</section>

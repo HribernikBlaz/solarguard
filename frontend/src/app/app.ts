@@ -1,43 +1,15 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { Auth } from './auth';
+import { AuthService } from '../services/auth-service';
 
 @Component({
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   selector: 'app-root',
-  template: `
-    <header>
-      <strong>SolarGuard</strong>
-      @if (auth.session(); as s) {
-        <span>
-          {{ s.name }} ({{ s.role }})
-          <button type="button" (click)="logout()">Odjava</button>
-        </span>
-      }
-    </header>
-    <div class="shell" [class.bare]="!auth.session()">
-      @if (auth.session()) {
-        <nav>
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
-          <a routerLink="/zemljevid" routerLinkActive="active">Zemljevid</a>
-          <a routerLink="/toplotna-karta" routerLinkActive="active">Toplotna karta</a>
-          <a routerLink="/napoved" routerLinkActive="active">Napoved</a>
-          <a routerLink="/sistemi" routerLinkActive="active">Moji sistemi</a>
-          <a routerLink="/alarmi" routerLinkActive="active">Alarmi</a>
-          <a routerLink="/servisni-nalogi" routerLinkActive="active">Servisni nalogi</a>
-          <a routerLink="/porocila" routerLinkActive="active">Poročila</a>
-          <a routerLink="/nastavitve" routerLinkActive="active">Nastavitve</a>
-          <small>Podatki</small>
-          <a routerLink="/naprave" routerLinkActive="active">Naprave</a>
-          <a routerLink="/meritve" routerLinkActive="active">Meritve</a>
-        </nav>
-      }
-      <main><router-outlet /></main>
-    </div>
-  `,
+  templateUrl: './app.html',
+  styleUrl: './app.scss',
 })
 export class App {
-  protected readonly auth = inject(Auth);
+  protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
   logout() {
