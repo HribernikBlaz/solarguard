@@ -35,7 +35,7 @@ const PAD = { l: 52, r: 8, t: 10, b: 28 };
         }
       </p>
     } @else {
-      <p class="placeholder">Ni podatkov za prikaz grafa.</p>
+      <p class="placeholder">{{ emptyText() }}</p>
     }
   `,
 })
@@ -46,6 +46,8 @@ export class ChartComponent {
   readonly barsLabel = input('Dejansko');
   readonly lineLabel = input('Pričakovano');
   readonly unit = input('kWh');
+  readonly titles = input<string[]>([]);
+  readonly emptyText = input('Ni podatkov za prikaz grafa.');
 
   protected readonly W = W;
   protected readonly H = H;
@@ -73,7 +75,7 @@ export class ChartComponent {
       return {
         i, label, x, w, cx: x + w / 2, show: i % every === 0,
         bx: x + w * 0.2, bw: w * 0.6, by: this.y(v), bh: H - PAD.b - this.y(v),
-        tip: `${label}: ${this.barsLabel()} ${f(v)} ${this.unit()}` + (this.line().length ? `, ${this.lineLabel()} ${f(this.line()[i])} ${this.unit()}` : ''),
+        tip: `${this.titles()[i] ?? label}: ${this.barsLabel()} ${f(v)} ${this.unit()}` + (this.line().length ? `, ${this.lineLabel()} ${f(this.line()[i])} ${this.unit()}` : ''),
       };
     });
   });
