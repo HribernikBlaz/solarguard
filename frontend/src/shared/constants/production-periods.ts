@@ -1,10 +1,15 @@
 import { Period } from '../models/period';
 
-export const SLOTS: Record<Period, number> = { dan: 24, teden: 7, mesec: 30, leto: 12 };
+const ZONE = 'Europe/Ljubljana';
 
-export const TITLE_FORMAT: Record<Period, Intl.DateTimeFormatOptions> = {
-  dan: { dateStyle: 'medium', timeStyle: 'short' },
-  teden: { dateStyle: 'medium' },
-  mesec: { dateStyle: 'medium' },
-  leto: { month: 'long', year: 'numeric' },
+export const HOUR_FORMAT = new Intl.DateTimeFormat('sl', { hour: 'numeric', hourCycle: 'h23', timeZone: ZONE });
+export const DAY_FORMAT = new Intl.DateTimeFormat('sl', { day: 'numeric', timeZone: ZONE });
+export const MONTH_NUMBER_FORMAT = new Intl.DateTimeFormat('sl', { month: 'numeric', timeZone: ZONE });
+export const MONTH_NAME_FORMAT = new Intl.DateTimeFormat('sl', { month: 'short', timeZone: ZONE });
+
+export const TITLE_FORMAT: Record<Period, Intl.DateTimeFormat> = {
+  dan: new Intl.DateTimeFormat('sl', { dateStyle: 'medium', timeStyle: 'short', timeZone: ZONE }),
+  teden: new Intl.DateTimeFormat('sl', { dateStyle: 'medium', timeZone: ZONE }),
+  mesec: new Intl.DateTimeFormat('sl', { dateStyle: 'medium', timeZone: ZONE }),
+  leto: new Intl.DateTimeFormat('sl', { month: 'long', year: 'numeric', timeZone: ZONE }),
 };

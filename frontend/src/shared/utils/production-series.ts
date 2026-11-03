@@ -1,65 +1,35 @@
-import { SLOTS, TITLE_FORMAT } from '../constants/production-periods';
+import { DAY_FORMAT, HOUR_FORMAT, MONTH_NAME_FORMAT, MONTH_NUMBER_FORMAT, TITLE_FORMAT } from '../constants/production-periods';
+import { ProductionComparison } from '../../services/dtos/production-comparison';
 import { Period } from '../models/period';
 import { Series } from '../models/series';
-import { dayKey } from './day';
 
-function bucketKey(period: Period, ms: number): string {
-  if (period === 'dan') {
-    return `${dayKey(ms)} ${new Date(ms).getHours()}`;
-  }
-  if (period === 'leto') {
-    return dayKey(ms).slice(0, 7);
-  }
-
-  return dayKey(ms);
+function part(format: Intl.DateTimeFormat, type: Intl.DateTimeFormatPartTypes, date: Date): string {
+  return format.formatToParts(date).find((p) => p.type === type)!.value.replace(/\D/g, '');
 }
 
-function slotStart(period: Period, now: Date, k: number): Date {
-  const back = SLOTS[period] - 1 - k;
-  const [y, m, d] = [now.getFullYear(), now.getMonth(), now.getDate()];
+function slotLabel(period: Period, start: Date): string {
   if (period === 'dan') {
-    return new Date(y, m, d, k);
+    return `${part(HOUR_FORMAT, 'hour', start)}:00`;
   }
   if (period === 'leto') {
-    return new Date(y, m - back, 1);
+    return MONTH_NAME_FORMAT.format(start);
   }
 
-  return new Date(y, m, d - back);
+  return `${part(DAY_FORMAT, 'day', start)}.${part(MONTH_NUMBER_FORMAT, 'month', start)}.`;
 }
 
-function slotLabel(period: Period, s: Date): string {
-  if (period === 'dan') {
-    return `${s.getHours()}:00`;
-  }
-  if (period === 'leto') {
-    return s.toLocaleString('sl', { month: 'short' });
-  }
-
-  return `${s.getDate()}.${s.getMonth() + 1}.`;
-}
-
-export function productionSeries(period: Period, now: number, actual: Map<number, number>, expected: Map<number, number>): Series {
-  const sums = new Map<string, number>();
-  const expectedSums = new Map<string, number>();
-  for (const [t, v] of actual) {
-    const key = bucketKey(period, t);
-    sums.set(key, (sums.get(key) ?? 0) + v);
-    expectedSums.set(key, (expectedSums.get(key) ?? 0) + (expected.get(t) ?? 0));
-  }
-
-  const slots = Array.from({ length: SLOTS[period] }, (_, k) => slotStart(period, new Date(now), k));
-  const keys = slots.map((s) => bucketKey(period, s.getTime()));
-  const bars = keys.map((key) => sums.get(key) ?? 0);
-  if (bars.every((b) => b === 0)) {
+export function productionSeries(comparison: ProductionComparison): Series {
+  const { period, points } = comparison;
+  if (points.every((p) => p.actualKwh === 0)) {
     return { labels: [], titles: [], bars: [], line: [] };
   }
 
-  const hasExpected = period === 'dan' || period === 'teden';
+  const hasExpected = points.some((p) => p.expectedKwh !== null);
 
   return {
-    labels: slots.map((s) => slotLabel(period, s)),
-    titles: slots.map((s) => s.toLocaleString('sl', TITLE_FORMAT[period])),
-    bars,
-    line: hasExpected ? keys.map((key) => expectedSums.get(key) ?? 0) : [],
+    labels: points.map((p) => slotLabel(period, new Date(p.start))),
+    titles: points.map((p) => TITLE_FORMAT[period].format(new Date(p.start))),
+    bars: points.map((p) => p.actualKwh),
+    line: hasExpected ? points.map((p) => p.expectedKwh ?? 0) : [],
   };
 }
