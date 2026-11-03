@@ -2,7 +2,7 @@
   <h1>Pregled</h1>
   <label>
     Sistem
-    <select [ngModel]="selectedId()" (ngModelChange)="selectedId.set($event)">
+    <select [ngModel]="selectedId()" (ngModelChange)="selectSystem($event)">
       @for (o of overviews(); track o.inst.id) {
         <option [value]="o.inst.id">{{ o.inst.name }}</option>
       }
@@ -36,21 +36,34 @@
     <div class="card-head">
       <h2>Proizvodnja (dejanska vs. pričakovana)</h2>
       <div class="seg">
-        <button type="button" [class.on]="period() === 'dan'" (click)="period.set('dan')">Dan</button>
-        <button type="button" [class.on]="period() === 'teden'" (click)="period.set('teden')">Teden</button>
-        <button type="button" [class.on]="period() === 'mesec'" (click)="period.set('mesec')">Mesec</button>
-        <button type="button" [class.on]="period() === 'leto'" (click)="period.set('leto')">Leto</button>
+        <button type="button" [class.on]="period() === 'dan'" (click)="selectPeriod('dan')">Dan</button>
+        <button type="button" [class.on]="period() === 'teden'" (click)="selectPeriod('teden')">Teden</button>
+        <button type="button" [class.on]="period() === 'mesec'" (click)="selectPeriod('mesec')">Mesec</button>
+        <button type="button" [class.on]="period() === 'leto'" (click)="selectPeriod('leto')">Leto</button>
       </div>
     </div>
-    <app-chart
-      [labels]="series().labels"
-      [titles]="series().titles"
-      [bars]="series().bars"
-      [line]="series().line"
-      barsLabel="Dejansko"
-      lineLabel="Pričakovano (napoved)"
-      emptyText="Ni podatkov za izbrano obdobje"
-    />
+    @if (comparison(); as c) {
+      <p class="muted">
+        Odstopanje od pričakovane proizvodnje:
+        @if (c.deviationPercent !== null) {
+          <strong>{{ c.deviationPercent > 0 ? '+' : '' }}{{ c.deviationPercent | number: '1.1-1' }} %</strong>
+        } @else {
+          ni na voljo
+        }
+      </p>
+      @if (c.warning) {
+        <p class="warning">{{ c.warning }}</p>
+      }
+      <app-chart
+        [labels]="series().labels"
+        [titles]="series().titles"
+        [bars]="series().bars"
+        [line]="series().line"
+        barsLabel="Dejansko"
+        lineLabel="Pričakovano (napoved)"
+        emptyText="Ni podatkov za izbrano obdobje"
+      />
+    }
   </section>
 }
 
