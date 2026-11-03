@@ -8,8 +8,6 @@ public class ProductionService(AppDbContext db, OpenMeteoClient openMeteo)
 {
     public static readonly string[] Periods = ["dan", "teden", "mesec", "leto"];
 
-    private static readonly TimeZoneInfo Zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Ljubljana");
-
     public async Task<ProductionComparison> Compare(Installation installation, string period, DateTime now)
     {
         var slots = Slots(period, now);
@@ -70,39 +68,35 @@ public class ProductionService(AppDbContext db, OpenMeteoClient openMeteo)
         return (irradiance, null);
     }
 
-    private static DateTime ToLocal(DateTime utc) => TimeZoneInfo.ConvertTimeFromUtc(utc, Zone);
-
-    private static DateTime ToUtc(DateTime local) => TimeZoneInfo.ConvertTimeToUtc(local, Zone);
-
     private static List<DateTime> Slots(string period, DateTime now)
     {
-        var today = ToLocal(now).Date;
+        var today = Slovenia.ToLocal(now).Date;
 
         return period switch
         {
-            "dan" => Enumerable.Range(0, 24).Select(h => ToUtc(today).AddHours(h)).ToList(),
-            "teden" => Enumerable.Range(-6, 7).Select(d => ToUtc(today.AddDays(d))).ToList(),
-            "mesec" => Enumerable.Range(-29, 30).Select(d => ToUtc(today.AddDays(d))).ToList(),
-            _ => Enumerable.Range(-11, 12).Select(m => ToUtc(new DateTime(today.Year, today.Month, 1).AddMonths(m))).ToList(),
+            "dan" => Enumerable.Range(0, 24).Select(h => Slovenia.ToUtc(today).AddHours(h)).ToList(),
+            "teden" => Enumerable.Range(-6, 7).Select(d => Slovenia.ToUtc(today.AddDays(d))).ToList(),
+            "mesec" => Enumerable.Range(-29, 30).Select(d => Slovenia.ToUtc(today.AddDays(d))).ToList(),
+            _ => Enumerable.Range(-11, 12).Select(m => Slovenia.ToUtc(new DateTime(today.Year, today.Month, 1).AddMonths(m))).ToList(),
         };
     }
 
     private static DateTime NextSlot(string period, DateTime slot) => period switch
     {
         "dan" => slot.AddHours(1),
-        "leto" => ToUtc(ToLocal(slot).AddMonths(1)),
-        _ => ToUtc(ToLocal(slot).AddDays(1)),
+        "leto" => Slovenia.ToUtc(Slovenia.ToLocal(slot).AddMonths(1)),
+        _ => Slovenia.ToUtc(Slovenia.ToLocal(slot).AddDays(1)),
     };
 
     private static DateTime SlotOf(string period, DateTime timestamp)
     {
-        var local = ToLocal(timestamp);
+        var local = Slovenia.ToLocal(timestamp);
 
         return period switch
         {
             "dan" => new DateTime(timestamp.Year, timestamp.Month, timestamp.Day, timestamp.Hour, 0, 0, DateTimeKind.Utc),
-            "leto" => ToUtc(new DateTime(local.Year, local.Month, 1)),
-            _ => ToUtc(local.Date),
+            "leto" => Slovenia.ToUtc(new DateTime(local.Year, local.Month, 1)),
+            _ => Slovenia.ToUtc(local.Date),
         };
     }
 }

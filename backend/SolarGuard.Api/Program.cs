@@ -41,6 +41,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<OpenMeteoClient>(c => c.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddScoped<ProductionService>();
+builder.Services.AddScoped<AlarmDetector>();
+builder.Services.AddHostedService<AlarmDetectionService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));

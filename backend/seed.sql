@@ -1,3 +1,4 @@
+DELETE FROM "Alarms";
 DELETE FROM "Measurements";
 DELETE FROM "Devices";
 DELETE FROM "Installations";
