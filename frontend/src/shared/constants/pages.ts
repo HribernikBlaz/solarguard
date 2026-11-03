@@ -1,6 +1,7 @@
 import { PageConfig } from '../models/page-config';
 
 const installationRef = { path: 'installations', label: (r: any) => r.name };
+const technicianRef = { path: 'technicians', label: (r: any) => r.name };
 const deviceRef = { path: 'devices', label: (r: any) => `${r.manufacturer} ${r.model} (${r.serialNumber})` };
 
 export const INSTALLATIONS: PageConfig = {
@@ -14,8 +15,9 @@ export const INSTALLATIONS: PageConfig = {
     { key: 'longitude', label: 'Lon', type: 'number' },
     { key: 'installationDate', label: 'Datum namestitve', type: 'date' },
     { key: 'ratedPowerKw', label: 'Nazivna moč (kW)', type: 'number' },
+    { key: 'technicianId', label: 'Serviser', type: 'select', ref: technicianRef, optional: true, adminOnly: true },
   ],
-  empty: () => ({ name: '', address: '', latitude: 0, longitude: 0, installationDate: '', ratedPowerKw: 0 }),
+  empty: () => ({ name: '', address: '', latitude: 0, longitude: 0, installationDate: '', ratedPowerKw: 0, technicianId: null }),
 };
 
 export const DEVICES: PageConfig = {
