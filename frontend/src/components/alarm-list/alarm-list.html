@@ -6,18 +6,20 @@
 }
 <table>
   <thead>
-    <tr><th>Sistem</th><th>Stopnja</th><th>Opis</th><th>Čas</th></tr>
+    <tr><th>Sistem</th><th>Naprava</th><th>Resnost</th><th>Opis</th><th>Zaznano</th><th>Status</th></tr>
   </thead>
   <tbody>
-    @for (r of rows(); track $index) {
+    @for (a of alarms(); track a.id) {
       <tr>
-        <td><a [routerLink]="['/sistemi', r.id]">{{ r.system }}</a></td>
-        <td><span class="badge" [attr.data-status]="r.level">{{ r.level }}</span></td>
-        <td>{{ r.text }}</td>
-        <td>{{ r.time ? (r.time | date: 'dd.MM.yyyy HH:mm') : 'zdaj' }}</td>
+        <td><a [routerLink]="['/sistemi', a.installationId]">{{ a.installationName }}</a></td>
+        <td>{{ a.deviceType }} {{ a.serialNumber }}</td>
+        <td><span class="badge" [attr.data-status]="severityLabels[a.severity]">{{ severityLabels[a.severity] }}</span></td>
+        <td>{{ a.description }}</td>
+        <td>{{ a.detectedAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+        <td>{{ statusLabels[a.status] }}</td>
       </tr>
     } @empty {
-      <tr><td colspan="4">Ni alarmov.</td></tr>
+      <tr><td colspan="6">Ni alarmov.</td></tr>
     }
   </tbody>
 </table>

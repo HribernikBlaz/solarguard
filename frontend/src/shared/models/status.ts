@@ -1,1 +1,1 @@
-export type Status = 'OK' | 'Opozorilo' | 'Alarm' | 'Ni podatkov';
+export type Status = 'OK' | 'Opozorilo' | 'Alarm';

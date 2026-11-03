@@ -1,5 +1,6 @@
-import { HOUR } from '../constants/production-rules';
 import { sumByDay } from './day';
+
+const HOUR = 3_600_000;
 
 describe('sumByDay', () => {
   it('sums by day', () => {

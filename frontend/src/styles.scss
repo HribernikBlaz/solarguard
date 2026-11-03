@@ -151,7 +151,7 @@ h2 {
   }
 
   &[data-status='Alarm'],
-  &[data-status='Napaka'] {
+  &[data-status='Kritično'] {
     color: #8c1d14;
     background: #f8d9d6;
   }

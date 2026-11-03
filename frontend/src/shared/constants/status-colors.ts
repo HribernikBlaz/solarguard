@@ -4,5 +4,4 @@ export const COLORS: Record<Status, string> = {
   OK: '#2e9d5b',
   Opozorilo: '#eba51d',
   Alarm: '#c6372c',
-  'Ni podatkov': '#8a95a3',
 };
