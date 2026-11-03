@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SolarGuard.Api.Controllers;
 using SolarGuard.Api.Data;
 using SolarGuard.Api.Models;
+using SolarGuard.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,9 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer(o =>
     };
 });
 builder.Services.AddAuthorization();
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<OpenMeteoClient>(c => c.Timeout = TimeSpan.FromSeconds(10));
+builder.Services.AddScoped<ProductionService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
