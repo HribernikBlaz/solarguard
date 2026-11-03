@@ -1,0 +1,23 @@
+@if (!installationId()) {
+  <h1>Alarmi</h1>
+}
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
+<table>
+  <thead>
+    <tr><th>Sistem</th><th>Stopnja</th><th>Opis</th><th>Čas</th></tr>
+  </thead>
+  <tbody>
+    @for (r of rows(); track $index) {
+      <tr>
+        <td><a [routerLink]="['/sistemi', r.id]">{{ r.system }}</a></td>
+        <td><span class="badge" [attr.data-status]="r.level">{{ r.level }}</span></td>
+        <td>{{ r.text }}</td>
+        <td>{{ r.time ? (r.time | date: 'dd.MM.yyyy HH:mm') : 'zdaj' }}</td>
+      </tr>
+    } @empty {
+      <tr><td colspan="4">Ni alarmov.</td></tr>
+    }
+  </tbody>
+</table>

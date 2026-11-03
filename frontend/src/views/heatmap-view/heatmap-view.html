@@ -1,0 +1,35 @@
+<div class="page-head">
+  <h1>Toplotna karta proizvodnje</h1>
+  <span class="muted">Pričakovana proizvodnja na 1 kWp (naklon 30°, jug)</span>
+</div>
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
+<div #map class="map"></div>
+<p class="legend scale">
+  <span>0</span><i class="ramp" [style.background]="gradient"></i><span>{{ max().toFixed(2) }} kWh/kWp</span>
+</p>
+
+<section class="card timebar">
+  <div class="card-head">
+    <h2>{{ label() }}</h2>
+    <div class="seg">
+      <button type="button" (click)="step(-24)" [disabled]="!ready()">−1 dan</button>
+      <button type="button" (click)="step(-1)" [disabled]="!ready()">◀ ura</button>
+      <button type="button" (click)="toggle()" [disabled]="!ready()">{{ playing() ? '⏸ Pavza' : '▶ Predvajaj' }}</button>
+      <button type="button" (click)="step(1)" [disabled]="!ready()">ura ▶</button>
+      <button type="button" (click)="step(24)" [disabled]="!ready()">+1 dan</button>
+      <button type="button" (click)="idx.set(nowIdx())" [disabled]="!ready()">Zdaj</button>
+    </div>
+  </div>
+  <input type="range" min="0" [max]="last()" [value]="idx()" (input)="idx.set(+$any($event.target).value)" [disabled]="!ready()" aria-label="Ura" />
+  @if (stats(); as s) {
+    <p class="stats">
+      Največ: <strong>{{ s.max.toFixed(2) }} kWh/kWp</strong> pri kraju {{ s.where }} ·
+      povprečje Slovenije: <strong>{{ s.mean.toFixed(2) }} kWh/kWp</strong>
+      @if (s.mean < 0.01) {
+        · (ponoči ni proizvodnje)
+      }
+    </p>
+  }
+</section>

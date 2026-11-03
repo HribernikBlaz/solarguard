@@ -1,0 +1,74 @@
+<div class="page-head">
+  <h1>Pregled</h1>
+  <label>
+    Sistem
+    <select [ngModel]="selectedId()" (ngModelChange)="selectedId.set($event)">
+      @for (o of overviews(); track o.inst.id) {
+        <option [value]="o.inst.id">{{ o.inst.name }}</option>
+      }
+    </select>
+  </label>
+</div>
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
+
+@if (sel(); as o) {
+  <section class="kpis">
+    <div class="kpi">
+      <span>Trenutna proizvodnja</span>
+      <strong>{{ current().kw | number: '1.2-2' }} kW</strong>
+      <small>{{ current().at ? (current().at | date: 'dd.MM. HH:mm') : 'ni meritev' }}</small>
+    </div>
+    <div class="kpi">
+      <span>Dnevni prihranek</span>
+      <strong>{{ savings() | number: '1.2-2' }} €</strong>
+      <small>danes {{ todayKwh() | number: '1.1-1' }} kWh po {{ cena | number: '1.2-2' }} €/kWh</small>
+    </div>
+    <div class="kpi" [class.bad]="o.result.messages.length > 0">
+      <span>Aktivni alarmi</span>
+      <strong>{{ o.result.messages.length }}</strong>
+      <small>{{ o.result.messages[0] ?? 'brez težav' }}</small>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Proizvodnja (dejanska vs. pričakovana)</h2>
+      <div class="seg">
+        <button type="button" [class.on]="period() === 'dan'" (click)="period.set('dan')">Dan</button>
+        <button type="button" [class.on]="period() === 'teden'" (click)="period.set('teden')">Teden</button>
+        <button type="button" [class.on]="period() === 'mesec'" (click)="period.set('mesec')">Mesec</button>
+        <button type="button" [class.on]="period() === 'leto'" (click)="period.set('leto')">Leto</button>
+      </div>
+    </div>
+    <app-chart
+      [labels]="series().labels"
+      [titles]="series().titles"
+      [bars]="series().bars"
+      [line]="series().line"
+      barsLabel="Dejansko"
+      lineLabel="Pričakovano (napoved)"
+      emptyText="Ni podatkov za izbrano obdobje"
+    />
+  </section>
+}
+
+<h2>Moji sistemi</h2>
+<table>
+  <thead>
+    <tr><th>Naziv</th><th>Naslov</th><th>Nazivna moč</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    @for (o of overviews(); track o.inst.id) {
+      <tr>
+        <td><a [routerLink]="['/sistemi', o.inst.id]">{{ o.inst.name }}</a></td>
+        <td>{{ o.inst.address }}</td>
+        <td>{{ o.inst.ratedPowerKw | number: '1.1-1' }} kW</td>
+        <td><span class="badge" [attr.data-status]="o.result.status">{{ o.result.status }}</span></td>
+      </tr>
+    } @empty {
+      <tr><td colspan="4">Ni sistemov.</td></tr>
+    }
+  </tbody>
+</table>

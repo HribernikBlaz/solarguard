@@ -1,0 +1,10 @@
+<h1>Zemljevid sistemov</h1>
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
+<div #map class="map"></div>
+<p class="legend">
+  @for (s of statuses; track s[0]) {
+    <span><i class="dot" [style.background]="s[1]"></i>{{ s[0] }}</span>
+  }
+</p>

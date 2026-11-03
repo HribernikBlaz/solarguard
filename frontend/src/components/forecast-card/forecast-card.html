@@ -1,0 +1,27 @@
+<section class="card">
+  <div class="card-head">
+    <h2>{{ o().inst.name }}</h2>
+    <span class="muted">{{ o().inst.address }} · {{ o().inst.ratedPowerKw }} kW · {{ o().inst.latitude }}, {{ o().inst.longitude }}</span>
+  </div>
+  @if (rows().length) {
+    <app-chart [labels]="labels()" [bars]="bars()" [line]="baseline()" barsLabel="Pričakovana proizvodnja" lineLabel="Povprečje zadnjih 7 dni" />
+    <table>
+      <thead>
+        <tr><th>Dan</th><th>Pričakovano (kWh)</th><th>Oblačnost 9–15 h</th><th>Ocena</th><th>Prihranek (€)</th></tr>
+      </thead>
+      <tbody>
+        @for (r of rows(); track r.key) {
+          <tr>
+            <td>{{ r.label }}</td>
+            <td>{{ r.kwh | number: '1.1-1' }}</td>
+            <td>{{ r.cloud === null ? '–' : (r.cloud | number: '1.0-0') + ' %' }}</td>
+            <td><span class="badge" [attr.data-grade]="r.tone">{{ r.grade }}</span></td>
+            <td>{{ r.kwh * cena | number: '1.2-2' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <p class="error">Napoved ni na voljo (Open-Meteo ni odgovoril).</p>
+  }
+</section>

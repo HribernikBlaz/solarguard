@@ -1,0 +1,49 @@
+.chart {
+  width: 100%;
+  height: auto;
+
+  .grid {
+    stroke: #e3e8ee;
+  }
+
+  .tick {
+    font-size: 11px;
+    fill: #6b7a8c;
+  }
+
+  .bar {
+    fill: #eba51d;
+  }
+
+  .line {
+    fill: none;
+    stroke: #10294a;
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+  }
+
+  .hit {
+    fill: transparent;
+
+    &:hover {
+      fill: rgba(16, 41, 74, 0.07);
+    }
+  }
+}
+
+.sw {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-right: 0.4rem;
+  vertical-align: middle;
+
+  &.bar {
+    background: #eba51d;
+  }
+
+  &.line {
+    height: 3px;
+    background: #10294a;
+  }
+}
