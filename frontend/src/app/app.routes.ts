@@ -16,6 +16,7 @@ export const routes: Routes = [
     canActivateChild: [authGuard],
     children: [
       { path: '', pathMatch: 'full', canActivate: ownerOrAdmin, loadComponent: () => import('../views/dashboard-view/dashboard-view').then((m) => m.DashboardView) },
+      { path: 'pregled-platforme', canActivate: [roleGuard(admin)], loadComponent: () => import('../views/admin-overview-view/admin-overview-view').then((m) => m.AdminOverviewView) },
       { path: 'zemljevid', canActivate: ownerOrAdmin, loadComponent: () => import('../views/map-view/map-view').then((m) => m.MapView) },
       { path: 'toplotna-karta', canActivate: ownerOrAdmin, loadComponent: () => import('../views/heatmap-view/heatmap-view').then((m) => m.HeatmapView) },
       { path: 'napoved', canActivate: ownerOrAdmin, loadComponent: () => import('../views/forecast-view/forecast-view').then((m) => m.ForecastView) },

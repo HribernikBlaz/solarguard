@@ -11,6 +11,7 @@ const { owner, technician, admin } = ROLES;
 
 export const MENU: MenuItem[] = [
   { path: '/', label: 'Dashboard', roles: [owner, admin], section: 'main' },
+  { path: '/pregled-platforme', label: 'Pregled platforme', roles: [admin], section: 'main' },
   { path: '/zemljevid', label: 'Zemljevid', roles: [owner, admin], section: 'main' },
   { path: '/toplotna-karta', label: 'Toplotna karta', roles: [owner, admin], section: 'main' },
   { path: '/napoved', label: 'Napoved', roles: [owner, admin], section: 'main' },

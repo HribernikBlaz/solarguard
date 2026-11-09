@@ -266,3 +266,11 @@ VALUES ('20261109190903_CenaElektrike', '10.0.13');
 
 COMMIT;
 
+START TRANSACTION;
+ALTER TABLE "AspNetUsers" ADD "LastLoginAt" timestamp with time zone;
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20261109212118_ZadnjaPrijava', '10.0.13');
+
+COMMIT;
+
