@@ -25,7 +25,12 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
     {
         // vloga ni del zahtevka: samostojno se da registrirati samo Lastnik
         var (user, errors) = await CreateUser(r.Email, r.Password, r.FirstName, r.LastName, AppRoles.Owner);
-        return user is null ? BadRequest(new { errors }) : Ok(Issue(user, AppRoles.Owner));
+        if (user is null)
+            return BadRequest(new { errors });
+
+        await RecordLogin(user);
+
+        return Ok(Issue(user, AppRoles.Owner));
     }
 
     [HttpPost("users")]
@@ -49,8 +54,16 @@ public class AuthController(UserManager<AppUser> users, SignInManager<AppUser> s
         if (result.IsLockedOut) return StatusCode(423, new { error = "Račun je zaklenjen za 5 minut zaradi preveč napačnih poskusov." });
         if (!result.Succeeded) return bad;
 
+        await RecordLogin(user);
         var role = (await users.GetRolesAsync(user)).FirstOrDefault() ?? AppRoles.Owner;
         return Ok(Issue(user, role));
+    }
+
+    // Za statistiko "aktivni uporabniki" v administratorskem pregledu.
+    async Task RecordLogin(AppUser user)
+    {
+        user.LastLoginAt = DateTime.UtcNow;
+        await users.UpdateAsync(user);
     }
 
     async Task<(AppUser? User, string[] Errors)> CreateUser(string? email, string? password, string? firstName, string? lastName, string role)
