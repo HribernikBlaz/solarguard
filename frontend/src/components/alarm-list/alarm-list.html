@@ -9,7 +9,7 @@
     <tr><th>Sistem</th><th>Naprava</th><th>Resnost</th><th>Opis</th><th>Zaznano</th><th>Status</th></tr>
   </thead>
   <tbody>
-    @for (a of alarms(); track a.id) {
+    @for (a of paged.rows(); track a.id) {
       <tr>
         <td><a [routerLink]="['/sistemi', a.installationId]">{{ a.installationName }}</a></td>
         <td>{{ a.deviceType }} {{ a.serialNumber }}</td>
@@ -19,7 +19,8 @@
         <td>{{ statusLabels[a.status] }}</td>
       </tr>
     } @empty {
-      <tr><td colspan="6">Ni alarmov.</td></tr>
+      <tr><td colspan="6">{{ ready() ? 'Ni alarmov.' : 'Nalagam ...' }}</td></tr>
     }
   </tbody>
 </table>
+<app-pager [total]="alarms().length" [(page)]="paged.page" [(size)]="paged.size" />

@@ -4,7 +4,7 @@
 @if (service.failed() && !service.loaded()) {
   <p class="error">Servisnih nalogov ni mogoče naložiti.</p>
 }
-@if (error()) {
+@if (error() && !closing()) {
   <p class="error">{{ error() }}</p>
 }
 <table>
@@ -12,7 +12,7 @@
     <tr><th>Sistem</th><th>Naprava</th><th>Resnost</th><th>Opis</th><th>Dodeljeno</th><th>Status</th><th>Ustvarjen</th><th></th></tr>
   </thead>
   <tbody>
-    @for (o of rows(); track o.id) {
+    @for (o of paged.rows(); track o.id) {
       <tr>
         <td><a [routerLink]="['/sistemi', o.installationId]">{{ o.installationName }}</a></td>
         <td>{{ o.deviceType }} {{ o.serialNumber }}</td>
@@ -26,46 +26,67 @@
           }
         </td>
         <td>{{ o.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-        <td><button type="button" class="btn" (click)="toggle(o)">{{ openId() === o.id ? 'Skrij potek' : 'Potek' }}</button></td>
+        <td><button type="button" class="btn" (click)="openDetail(o)">Podrobnosti</button></td>
       </tr>
-      @if (closingId() === o.id && next(o) === 'Completed') {
-        <tr>
-          <td colspan="8">
-            <form (ngSubmit)="finish(o)">
-              <label>
-                Opis opravljenega dela
-                <textarea name="summary" rows="3" [maxlength]="summaryMax" [(ngModel)]="summary"></textarea>
-              </label>
-              <div class="buttons">
-                <button type="submit" class="btn" [disabled]="busyId() === o.id || !summary().trim()">Zaključi nalog</button>
-                <button type="button" class="btn" (click)="closingId.set(null)">Prekliči</button>
-              </div>
-            </form>
-          </td>
-        </tr>
-      }
-      @if (openId() === o.id) {
-        <tr>
-          <td colspan="8">
-            @if (o.summary) {
-              <p><strong>Opis opravljenega dela:</strong> {{ o.summary }}</p>
-            }
-            @if (changes(); as list) {
-              @for (c of list; track c.changedAt) {
-                <div class="muted">{{ c.changedAt | date: 'dd.MM.yyyy HH:mm' }}: {{ statusLabels[c.status] }} ({{ c.changedByName }})</div>
-              } @empty {
-                <div class="muted">Status še ni bil spremenjen.</div>
-              }
-            } @else if (historyFailed()) {
-              <div class="error">Poteka ni mogoče naložiti.</div>
-            } @else {
-              <div class="muted">Nalagam ...</div>
-            }
-          </td>
-        </tr>
-      }
     } @empty {
       <tr><td colspan="8">{{ service.loaded() ? 'Ni servisnih nalogov.' : 'Nalagam ...' }}</td></tr>
     }
   </tbody>
 </table>
+<app-pager [total]="rows().length" [(page)]="paged.page" [(size)]="paged.size" />
+
+@if (closing(); as o) {
+  <app-dialog title="Zaključi servisni nalog" [dismissOnBackdrop]="false" (dismissed)="cancelClosing()">
+    <form (ngSubmit)="finish(o)">
+      <p class="muted full">{{ o.installationName }}: {{ o.deviceType }} {{ o.serialNumber }}</p>
+      <label class="full">
+        Opis opravljenega dela
+        <textarea name="summary" rows="4" [maxlength]="summaryMax" [(ngModel)]="summary"></textarea>
+      </label>
+      @if (error()) {
+        <p class="error full">{{ error() }}</p>
+      }
+      <div class="dialog-actions full">
+        <button type="button" (click)="cancelClosing()">Prekliči</button>
+        <button type="submit" [disabled]="busyId() === o.id || !summary().trim()">Zaključi nalog</button>
+      </div>
+    </form>
+  </app-dialog>
+}
+
+@if (detail(); as o) {
+  <app-dialog title="Servisni nalog" (dismissed)="detailId.set(null)">
+    <p>
+      <a [routerLink]="['/sistemi', o.installationId]" (click)="detailId.set(null)">{{ o.installationName }}</a>,
+      {{ o.installationAddress }}<br />
+      {{ o.deviceType }} {{ o.serialNumber }} ·
+      <span class="badge" [attr.data-status]="severityLabels[o.severity]">{{ severityLabels[o.severity] }}</span>
+    </p>
+    <p>{{ o.description }}</p>
+    <p class="muted">
+      Status: {{ statusLabels[o.status] }} · Dodeljeno: {{ o.assigneeName ?? 'ni dodeljen' }}<br />
+      Ustvarjen: {{ o.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+      @if (o.closedAt) {
+        · Zaključen: {{ o.closedAt | date: 'dd.MM.yyyy HH:mm' }}
+      }
+    </p>
+    @if (o.summary) {
+      <p><strong>Opis opravljenega dela:</strong> {{ o.summary }}</p>
+    }
+    <h2>Potek</h2>
+    @if (changes(); as list) {
+      @for (c of list; track c.changedAt) {
+        <div class="muted">{{ c.changedAt | date: 'dd.MM.yyyy HH:mm' }}: {{ statusLabels[c.status] }} ({{ c.changedByName }})</div>
+      } @empty {
+        <div class="muted">Status še ni bil spremenjen.</div>
+      }
+    } @else if (historyFailed()) {
+      <div class="error">Poteka ni mogoče naložiti.</div>
+    } @else {
+      <div class="muted">Nalagam ...</div>
+    }
+    <div class="dialog-actions">
+      <button type="button" (click)="detailId.set(null)">Zapri</button>
+    </div>
+  </app-dialog>
+}

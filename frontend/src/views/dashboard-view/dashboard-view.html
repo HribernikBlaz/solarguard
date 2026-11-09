@@ -70,7 +70,7 @@
     <tr><th>Naziv</th><th>Naslov</th><th>Nazivna moč</th><th>Status</th></tr>
   </thead>
   <tbody>
-    @for (o of overviews(); track o.inst.id) {
+    @for (o of paged.rows(); track o.inst.id) {
       <tr>
         <td><a [routerLink]="['/sistemi', o.inst.id]">{{ o.inst.name }}</a></td>
         <td>{{ o.inst.address }}</td>
@@ -82,3 +82,4 @@
     }
   </tbody>
 </table>
+<app-pager [total]="overviews().length" [(page)]="paged.page" [(size)]="paged.size" />
