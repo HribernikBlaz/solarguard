@@ -1,7 +1,7 @@
 import { DecimalPipe, formatDate } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import { Overview } from '../../services/dtos/overview';
-import { CENA_KWH, GOOD_DAY, WEAK_DAY } from '../../shared/constants/production-rules';
+import { GOOD_DAY, WEAK_DAY } from '../../shared/constants/production-rules';
 import { dayKey, sumByDay } from '../../shared/utils/day';
 import { Chart } from '../chart/chart';
 
@@ -13,7 +13,7 @@ import { Chart } from '../chart/chart';
 export class ForecastCard {
   readonly o = input.required<Overview>();
   readonly days = input(7);
-  protected readonly cena = CENA_KWH;
+  protected readonly price = computed(() => this.o().inst.electricityPrice);
 
   private readonly model = computed(() => {
     const w = this.o().weather;
@@ -24,6 +24,7 @@ export class ForecastCard {
         cloud.set(dayKey(h.t), [...(cloud.get(dayKey(h.t)) ?? []), h.cloud]);
       }
     }
+    const price = this.price();
     const keys = [...kwh.keys()].sort();
     const i0 = keys.indexOf(dayKey(Date.now()));
     const past = i0 < 0 ? [] : keys.slice(Math.max(0, i0 - 7), i0).map((k) => kwh.get(k)!);
@@ -34,7 +35,7 @@ export class ForecastCard {
       const ratio = avg ? kw / avg : 1;
 
       return {
-        key, kwh: kw, cloud: c ? c.reduce((a, b) => a + b, 0) / c.length : null,
+        key, kwh: kw, saving: price === null ? null : kw * price, cloud: c ? c.reduce((a, b) => a + b, 0) / c.length : null,
         label: formatDate(new Date(key + 'T12:00'), key === dayKey(Date.now()) ? "'Danes' d. M." : 'EEE d. M.', 'sl'),
         ...this.rate(ratio),
       };

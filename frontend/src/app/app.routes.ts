@@ -19,6 +19,7 @@ export const routes: Routes = [
       { path: 'zemljevid', canActivate: ownerOrAdmin, loadComponent: () => import('../views/map-view/map-view').then((m) => m.MapView) },
       { path: 'toplotna-karta', canActivate: ownerOrAdmin, loadComponent: () => import('../views/heatmap-view/heatmap-view').then((m) => m.HeatmapView) },
       { path: 'napoved', canActivate: ownerOrAdmin, loadComponent: () => import('../views/forecast-view/forecast-view').then((m) => m.ForecastView) },
+      { path: 'napoved/:id', canActivate: ownerOrAdmin, loadComponent: () => import('../views/forecast-detail-view/forecast-detail-view').then((m) => m.ForecastDetailView) },
       { path: 'alarmi', canActivate: ownerOrAdmin, loadComponent: () => import('../components/alarm-list/alarm-list').then((m) => m.AlarmList) },
       { path: 'sistemi', component: CrudPage, data: { config: INSTALLATIONS } },
       { path: 'sistemi/:id', loadComponent: () => import('../views/system-detail-view/system-detail-view').then((m) => m.SystemDetailView) },

@@ -35,7 +35,7 @@ export class SystemDetailView implements OnInit {
   }
 
   ngOnInit() {
-    this.data.overview().subscribe({
+    this.data.overview(this.id()).subscribe({
       next: (os) => {
         this.o.set(os.find((o) => o.inst.id === this.id()) ?? null);
         if (!this.o()) {
