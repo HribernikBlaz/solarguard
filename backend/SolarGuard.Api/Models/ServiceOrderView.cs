@@ -14,7 +14,8 @@ public record ServiceOrderView(
     string? AssigneeName,
     DateTime CreatedAt,
     DateTime? ClosedAt,
-    string? Summary);
+    string? Summary,
+    bool IsAssignedToMe);
 
 public record ServiceOrderChangeView(ServiceOrderStatus Status, DateTime ChangedAt, string ChangedByName);
 

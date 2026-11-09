@@ -13,6 +13,7 @@ public class ServiceOrdersController(AppDbContext db) : OwnedController(db)
     [HttpGet]
     public async Task<ActionResult<List<ServiceOrderView>>> GetAll(Guid? installationId)
     {
+        var currentUserId = UserId;
         var orders = VisibleOrders();
         if (installationId is { } id)
             orders = orders.Where(o => o.InstallationId == id);
@@ -37,7 +38,8 @@ public class ServiceOrdersController(AppDbContext db) : OwnedController(db)
                 Db.Users.Where(u => u.Id == x.Order.AssigneeId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefault(),
                 x.Order.CreatedAt,
                 x.Order.ClosedAt,
-                x.Order.Summary))
+                x.Order.Summary,
+                x.Order.AssigneeId == currentUserId))
             .AsNoTracking()
             .ToListAsync();
     }
