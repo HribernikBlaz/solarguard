@@ -219,3 +219,82 @@ h2 {
   color: #7a5200;
   font-size: 0.85rem;
 }
+
+dialog {
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 3rem);
+  padding: 1rem 1.25rem;
+  color: #1b2430;
+  border: 1px solid #b9c4d0;
+  border-radius: 6px;
+
+  &::backdrop {
+    background: rgb(16 41 74 / 45%);
+  }
+
+  form {
+    padding: 0;
+    border: 0;
+  }
+}
+
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.dialog-close {
+  font-size: 1.3rem;
+  line-height: 1;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: end;
+  margin: 0 0 0.5rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+  }
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+
+  label {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+}
+
+.full {
+  grid-column: 1 / -1;
+}
