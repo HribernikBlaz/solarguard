@@ -45,6 +45,8 @@ builder.Services.AddScoped<SavingsService>();
 builder.Services.AddScoped<ForecastService>();
 builder.Services.AddScoped<AlarmDetector>();
 builder.Services.AddHostedService<AlarmDetectionService>();
+builder.Services.AddScoped<WarrantyChecker>();
+builder.Services.AddHostedService<WarrantyCheckService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));

@@ -15,6 +15,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ServiceOrder> ServiceOrders => Set<ServiceOrder>();
     public DbSet<ServiceOrderChange> ServiceOrderChanges => Set<ServiceOrderChange>();
     public DbSet<ElectricityPriceChange> ElectricityPriceChanges => Set<ElectricityPriceChange>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -56,6 +57,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         b.Entity<ElectricityPriceChange>().Property(c => c.PricePerKwh).HasPrecision(8, 4);
         b.Entity<ElectricityPriceChange>().HasOne<Installation>().WithMany().HasForeignKey(c => c.InstallationId);
         b.Entity<ElectricityPriceChange>().HasIndex(c => new { c.InstallationId, c.ValidFrom });
+        b.Entity<Notification>().HasOne<AppUser>().WithMany().HasForeignKey(n => n.UserId);
+        b.Entity<Notification>().Property(n => n.Kind).HasConversion<string>();
+        b.Entity<Notification>().HasIndex(n => new { n.UserId, n.CreatedAt });
+        b.Entity<Notification>().HasIndex(n => n.DedupeKey).IsUnique();
         b.Entity<Measurement>().Property(m => m.ProductionKwh).HasPrecision(12, 3);
         b.Entity<Measurement>().Property(m => m.Temperature).HasPrecision(6, 2);
         b.Entity<Measurement>().HasIndex(m => new { m.DeviceId, m.Timestamp });
