@@ -60,7 +60,13 @@
             />
           }
           @default {
-            <input [type]="field.type" step="any" [name]="field.key" [(ngModel)]="f[field.key]" required />
+            <input
+              [type]="field.type"
+              step="any"
+              [name]="field.key"
+              [(ngModel)]="f[field.key]"
+              [required]="!field.optional"
+            />
           }
         }
       </label>

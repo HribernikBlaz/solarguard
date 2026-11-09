@@ -5,27 +5,24 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { EMPTY, Subject, catchError, map, switchMap, timer } from 'rxjs';
 import { Chart } from '../../components/chart/chart';
+import { SavingsCard } from '../../components/savings-card/savings-card';
 import { Overview } from '../../services/dtos/overview';
 import { ProductionComparison } from '../../services/dtos/production-comparison';
 import { ProductionService } from '../../services/production-service';
 import { SolarDataService } from '../../services/solar-data-service';
-import { CENA_KWH } from '../../shared/constants/production-rules';
 import { Period } from '../../shared/models/period';
-import { dayKey, sumByDay } from '../../shared/utils/day';
 import { productionSeries } from '../../shared/utils/production-series';
 
 @Component({
   selector: 'app-dashboard-view',
-  imports: [FormsModule, DatePipe, DecimalPipe, RouterLink, Chart],
+  imports: [FormsModule, DatePipe, DecimalPipe, RouterLink, Chart, SavingsCard],
   templateUrl: './dashboard-view.html',
-  styleUrl: './dashboard-view.scss',
 })
 export class DashboardView implements OnInit {
   protected readonly overviews = signal<Overview[]>([]);
   protected readonly selectedId = signal('');
   protected readonly period = signal<Period>('dan');
   protected readonly error = signal('');
-  protected readonly cena = CENA_KWH;
   private readonly loaded = signal<{ id: string; data: ProductionComparison } | null>(null);
   private readonly comparisonRequest = new Subject<void>();
   private readonly data = inject(SolarDataService);
@@ -49,9 +46,6 @@ export class DashboardView implements OnInit {
 
     return { kw: o?.actual.get(t) ?? 0, at: t || null };
   });
-
-  protected readonly todayKwh = computed(() => sumByDay(this.sel()?.actual ?? []).get(dayKey(Date.now())) ?? 0);
-  protected readonly savings = computed(() => this.todayKwh() * CENA_KWH);
 
   protected readonly series = computed(() => {
     const comparison = this.comparison();

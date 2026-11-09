@@ -20,17 +20,14 @@
       <strong>{{ current().kw | number: '1.2-2' }} kW</strong>
       <small>{{ current().at ? (current().at | date: 'dd.MM. HH:mm') : 'ni meritev' }}</small>
     </div>
-    <div class="kpi">
-      <span>Dnevni prihranek</span>
-      <strong>{{ savings() | number: '1.2-2' }} €</strong>
-      <small>danes {{ todayKwh() | number: '1.1-1' }} kWh po {{ cena | number: '1.2-2' }} €/kWh</small>
-    </div>
     <div class="kpi" [class.bad]="o.result.messages.length > 0">
       <span>Aktivni alarmi</span>
       <strong>{{ o.result.messages.length }}</strong>
       <small>{{ o.result.messages[0] ?? 'brez težav' }}</small>
     </div>
   </section>
+
+  <app-savings-card [installationId]="selectedId()" />
 
   <section class="card">
     <div class="card-head">
