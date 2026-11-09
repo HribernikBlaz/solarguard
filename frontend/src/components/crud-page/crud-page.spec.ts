@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { DEVICES, INSTALLATIONS } from '../../shared/constants/pages';
+import { DEVICES, INSTALLATIONS, MEASUREMENTS } from '../../shared/constants/pages';
 import { CrudPage } from './crud-page';
 
 describe('CrudPage', () => {
@@ -69,6 +69,41 @@ describe('CrudPage', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.textContent).not.toContain('Serviser');
+  });
+
+  const buttonTexts = (el: HTMLElement) => [...el.querySelectorAll('button')].map((b) => b.textContent!.trim());
+
+  it('gives the owner no way to add measurements', async () => {
+    signIn('Lastnik');
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
+    const http = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(CrudPage);
+    fixture.componentRef.setInput('config', MEASUREMENTS);
+    fixture.detectChanges();
+
+    http.expectOne('/api/measurements').flush([{ id: 'm1', deviceId: 'd1', timestamp: '2026-11-03T10:00:00Z', productionKwh: 1, temperature: 2, hasError: false }]);
+    http.expectOne('/api/devices').flush([]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(buttonTexts(fixture.nativeElement)).toEqual(['Razvrsti: najnovejše prej']);
+  });
+
+  it('shows the technician devices read-only', async () => {
+    signIn('Serviser');
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
+    const http = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(CrudPage);
+    fixture.componentRef.setInput('config', DEVICES);
+    fixture.detectChanges();
+
+    http.expectOne('/api/devices').flush([{ id: 'd1', installationId: 'i1', type: 'Panel', manufacturer: 'Fronius', model: 'Primo', serialNumber: 'X1', installedOn: '2024-01-01', warrantyUntil: '2030-01-01' }]);
+    http.expectOne('/api/installations').flush([{ id: 'i1', name: 'Streha' }]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Fronius');
+    expect(buttonTexts(fixture.nativeElement)).toEqual(['Razvrsti: najnovejše prej']);
   });
 
   it('shows the technician name to an admin', async () => {

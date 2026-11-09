@@ -18,6 +18,9 @@ public class MeasurementsController(AppDbContext db) : CrudController<Measuremen
         return Db.Measurements.Where(m => own.Any(d => d.Id == m.DeviceId));
     }
 
+    // Meritve prihajajo iz naprav; ročni vnos je samo začasna zamenjava za demo in ga sme izvajati admin.
+    protected override bool CanWrite => IsAdmin;
+
     protected override async Task<string?> Prepare(Measurement item, Measurement? existing)
     {
         var deviceIsVisible = await OwnDevices().AnyAsync(d => d.Id == item.DeviceId);

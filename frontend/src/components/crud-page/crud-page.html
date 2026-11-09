@@ -76,7 +76,7 @@
       <button type="button" (click)="form.set(null)">Prekliči</button>
     </div>
   </form>
-} @else {
+} @else if (canWrite()) {
   <button type="button" (click)="add()">Dodaj</button>
 }
 
@@ -114,8 +114,10 @@
           @if (config().detail; as detail) {
             <a class="btn" [routerLink]="[detail, row.id]">Podrobnosti</a>
           }
-          <button type="button" (click)="edit(row)">Uredi</button>
-          <button type="button" (click)="remove(row)">Izbriši</button>
+          @if (canWrite()) {
+            <button type="button" (click)="edit(row)">Uredi</button>
+            <button type="button" (click)="remove(row)">Izbriši</button>
+          }
         </td>
       </tr>
     } @empty {
