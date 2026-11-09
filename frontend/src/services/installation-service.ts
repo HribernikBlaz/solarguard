@@ -10,4 +10,8 @@ export class InstallationService {
   getAll(): Observable<Installation[]> {
     return this.http.get<Installation[]>('/api/installations');
   }
+
+  get(id: string): Observable<Installation> {
+    return this.http.get<Installation>(`/api/installations/${id}`);
+  }
 }

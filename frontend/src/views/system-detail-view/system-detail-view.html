@@ -70,7 +70,7 @@
           </select>
         </label>
       </p>
-      <app-forecast-card [o]="o" [days]="days()" />
+      <app-forecast-card [installation]="o.inst" [days]="days()" />
     }
     @case ('alarmi') {
       <app-alarm-list [installationId]="id()" />

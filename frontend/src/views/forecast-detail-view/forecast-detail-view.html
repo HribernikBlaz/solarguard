@@ -13,14 +13,11 @@
 @if (error()) {
   <p class="error">{{ error() }}</p>
 }
-@if (overview(); as o) {
-  <app-forecast-card [o]="o" [days]="days()" />
-} @else if (ready()) {
-  <p>Sistem ne obstaja.</p>
+@if (installation(); as i) {
+  <app-forecast-card [installation]="i" [days]="days()" />
 } @else if (!error()) {
   <p class="muted">Nalagam ...</p>
 }
 <p class="muted">
   Napoved sevanja na nagnjeno ploskev (30°, jug) za lokacijo sistema: Open-Meteo (open-meteo.com). Pričakovana proizvodnja = sevanje × nazivna moč × 0,8.
-  Napoved se osveži vsakih 15 minut.
 </p>
