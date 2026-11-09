@@ -329,6 +329,29 @@ namespace SolarGuard.Api.Migrations
                     b.ToTable("Devices");
                 });
 
+            modelBuilder.Entity("SolarGuard.Api.Models.ElectricityPriceChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("InstallationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("PricePerKwh")
+                        .HasPrecision(8, 4)
+                        .HasColumnType("numeric(8,4)");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InstallationId", "ValidFrom");
+
+                    b.ToTable("ElectricityPriceChanges");
+                });
+
             modelBuilder.Entity("SolarGuard.Api.Models.Installation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -338,6 +361,10 @@ namespace SolarGuard.Api.Migrations
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<decimal?>("ElectricityPrice")
+                        .HasPrecision(8, 4)
+                        .HasColumnType("numeric(8,4)");
 
                     b.Property<DateOnly>("InstallationDate")
                         .HasColumnType("date");
@@ -538,6 +565,15 @@ namespace SolarGuard.Api.Migrations
                 });
 
             modelBuilder.Entity("SolarGuard.Api.Models.Device", b =>
+                {
+                    b.HasOne("SolarGuard.Api.Models.Installation", null)
+                        .WithMany()
+                        .HasForeignKey("InstallationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SolarGuard.Api.Models.ElectricityPriceChange", b =>
                 {
                     b.HasOne("SolarGuard.Api.Models.Installation", null)
                         .WithMany()

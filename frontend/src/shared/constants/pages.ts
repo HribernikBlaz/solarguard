@@ -15,9 +15,10 @@ export const INSTALLATIONS: PageConfig = {
     { key: 'longitude', label: 'Lon', type: 'number' },
     { key: 'installationDate', label: 'Datum namestitve', type: 'date' },
     { key: 'ratedPowerKw', label: 'Nazivna moč (kW)', type: 'number' },
+    { key: 'electricityPrice', label: 'Cena elektrike (€/kWh)', type: 'number', optional: true },
     { key: 'technicianId', label: 'Serviser', type: 'select', ref: technicianRef, optional: true, adminOnly: true },
   ],
-  empty: () => ({ name: '', address: '', latitude: 0, longitude: 0, installationDate: '', ratedPowerKw: 0, technicianId: null }),
+  empty: () => ({ name: '', address: '', latitude: 0, longitude: 0, installationDate: '', ratedPowerKw: 0, electricityPrice: null, technicianId: null }),
 };
 
 export const DEVICES: PageConfig = {

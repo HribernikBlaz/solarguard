@@ -6,4 +6,5 @@ export interface Installation {
   longitude: number;
   installationDate: string;
   ratedPowerKw: number;
+  electricityPrice: number | null;
 }

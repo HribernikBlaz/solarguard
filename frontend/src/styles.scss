@@ -181,3 +181,41 @@ h2 {
   border: 1px solid #dde4ea;
   border-radius: 6px;
 }
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.9rem 1.1rem;
+  background: #fff;
+  border: 1px solid #dde4ea;
+  border-left: 4px solid #eba51d;
+  border-radius: 6px;
+
+  span,
+  small {
+    color: #6b7a8c;
+    font-size: 0.8rem;
+  }
+
+  strong {
+    font-size: 1.7rem;
+  }
+
+  &.bad {
+    border-left-color: #c6372c;
+  }
+}
+
+.warning {
+  margin: 0 0 0.5rem;
+  color: #7a5200;
+  font-size: 0.85rem;
+}

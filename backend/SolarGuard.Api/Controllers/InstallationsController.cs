@@ -7,12 +7,18 @@ using SolarGuard.Api.Services;
 namespace SolarGuard.Api.Controllers;
 
 [Route("api/installations")]
-public class InstallationsController(AppDbContext db, ProductionService production) : CrudController<Installation>(db)
+public class InstallationsController(AppDbContext db, ProductionService production, SavingsService savings) : CrudController<Installation>(db)
 {
+    private const decimal MaxPricePerKwh = 10m;
+
     protected override IQueryable<Installation> Visible() => OwnInstallations();
 
     protected override async Task<string?> Prepare(Installation item, Installation? existing)
     {
+        var priceError = RecordPrice(item, existing);
+        if (priceError is not null)
+            return priceError;
+
         if (existing is not null)
             item.OwnerId = existing.OwnerId;
         else if (!IsAdmin || item.OwnerId is null)
@@ -27,6 +33,36 @@ public class InstallationsController(AppDbContext db, ProductionService producti
 
         if (item.TechnicianId is { } technicianId && !await IsTechnician(technicianId))
             return "Izbrani uporabnik ni serviser.";
+
+        return null;
+    }
+
+    // Vsaka sprememba cene doda vrstico zgodovine, stare ostanejo, zato se pretekli prihranek ne preračuna.
+    private string? RecordPrice(Installation item, Installation? existing)
+    {
+        if (item.ElectricityPrice is not { } enteredPrice)
+        {
+            if (existing?.ElectricityPrice is null)
+                return null;
+
+            return "Cene elektrike ni mogoče odstraniti, vnesite novo ceno.";
+        }
+
+        var price = Math.Round(enteredPrice, 4, MidpointRounding.AwayFromZero);
+        if (price <= 0 || price > MaxPricePerKwh)
+            return $"Cena elektrike mora biti večja od 0 in največ {MaxPricePerKwh} €/kWh.";
+
+        item.ElectricityPrice = price;
+        if (price == existing?.ElectricityPrice)
+            return null;
+
+        Db.ElectricityPriceChanges.Add(new ElectricityPriceChange
+        {
+            Id = Guid.NewGuid(),
+            InstallationId = item.Id,
+            PricePerKwh = price,
+            ValidFrom = DateTime.UtcNow,
+        });
 
         return null;
     }
@@ -57,5 +93,15 @@ public class InstallationsController(AppDbContext db, ProductionService producti
             return NotFound();
 
         return await production.Compare(installation, period, DateTime.UtcNow);
+    }
+
+    [HttpGet("{id:guid}/savings")]
+    public async Task<ActionResult<Savings>> GetSavings(Guid id)
+    {
+        var installation = await Visible().AsNoTracking().FirstOrDefaultAsync(i => i.Id == id);
+        if (installation is null)
+            return NotFound();
+
+        return await savings.Calculate(installation, DateTime.UtcNow);
     }
 }
