@@ -247,3 +247,22 @@ VALUES ('20261109180940_ServisniNaloziZgodovina', '10.0.13');
 
 COMMIT;
 
+START TRANSACTION;
+ALTER TABLE "Installations" ADD "ElectricityPrice" numeric(8,4);
+
+CREATE TABLE "ElectricityPriceChanges" (
+    "Id" uuid NOT NULL,
+    "InstallationId" uuid NOT NULL,
+    "PricePerKwh" numeric(8,4) NOT NULL,
+    "ValidFrom" timestamp with time zone NOT NULL,
+    CONSTRAINT "PK_ElectricityPriceChanges" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_ElectricityPriceChanges_Installations_InstallationId" FOREIGN KEY ("InstallationId") REFERENCES "Installations" ("Id") ON DELETE CASCADE
+);
+
+CREATE INDEX "IX_ElectricityPriceChanges_InstallationId_ValidFrom" ON "ElectricityPriceChanges" ("InstallationId", "ValidFrom");
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20261109190903_CenaElektrike', '10.0.13');
+
+COMMIT;
+
