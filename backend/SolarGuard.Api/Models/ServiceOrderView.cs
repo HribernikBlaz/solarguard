@@ -13,6 +13,11 @@ public record ServiceOrderView(
     Guid? AssigneeId,
     string? AssigneeName,
     DateTime CreatedAt,
-    DateTime? ClosedAt);
+    DateTime? ClosedAt,
+    string? Summary);
+
+public record ServiceOrderChangeView(ServiceOrderStatus Status, DateTime ChangedAt, string ChangedByName);
+
+public record ChangeStatusRequest(ServiceOrderStatus Status, string? Summary);
 
 public record TechnicianView(Guid Id, string Name);

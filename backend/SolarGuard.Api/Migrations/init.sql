@@ -224,3 +224,26 @@ VALUES ('20261103203829_ServisniNalogi', '10.0.13');
 
 COMMIT;
 
+START TRANSACTION;
+ALTER TABLE "ServiceOrders" ADD "Summary" character varying(1000);
+
+CREATE TABLE "ServiceOrderChanges" (
+    "Id" uuid NOT NULL,
+    "ServiceOrderId" uuid NOT NULL,
+    "Status" text NOT NULL,
+    "ChangedAt" timestamp with time zone NOT NULL,
+    "ChangedById" uuid NOT NULL,
+    CONSTRAINT "PK_ServiceOrderChanges" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_ServiceOrderChanges_AspNetUsers_ChangedById" FOREIGN KEY ("ChangedById") REFERENCES "AspNetUsers" ("Id") ON DELETE RESTRICT,
+    CONSTRAINT "FK_ServiceOrderChanges_ServiceOrders_ServiceOrderId" FOREIGN KEY ("ServiceOrderId") REFERENCES "ServiceOrders" ("Id") ON DELETE CASCADE
+);
+
+CREATE INDEX "IX_ServiceOrderChanges_ChangedById" ON "ServiceOrderChanges" ("ChangedById");
+
+CREATE INDEX "IX_ServiceOrderChanges_ServiceOrderId_ChangedAt" ON "ServiceOrderChanges" ("ServiceOrderId", "ChangedAt");
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20261109180940_ServisniNaloziZgodovina', '10.0.13');
+
+COMMIT;
+

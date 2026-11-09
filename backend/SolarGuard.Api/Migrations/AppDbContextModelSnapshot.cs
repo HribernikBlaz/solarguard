@@ -429,8 +429,13 @@ namespace SolarGuard.Api.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Status")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.HasKey("Id");
 
@@ -442,6 +447,34 @@ namespace SolarGuard.Api.Migrations
                     b.HasIndex("AssigneeId", "Status");
 
                     b.ToTable("ServiceOrders");
+                });
+
+            modelBuilder.Entity("SolarGuard.Api.Models.ServiceOrderChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ChangedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ServiceOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChangedById");
+
+                    b.HasIndex("ServiceOrderId", "ChangedAt");
+
+                    b.ToTable("ServiceOrderChanges");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -551,6 +584,21 @@ namespace SolarGuard.Api.Migrations
                     b.HasOne("SolarGuard.Api.Models.Installation", null)
                         .WithMany()
                         .HasForeignKey("InstallationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SolarGuard.Api.Models.ServiceOrderChange", b =>
+                {
+                    b.HasOne("SolarGuard.Api.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("ChangedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SolarGuard.Api.Models.ServiceOrder", null)
+                        .WithMany()
+                        .HasForeignKey("ServiceOrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
