@@ -6,8 +6,10 @@ import { AlarmList } from '../../components/alarm-list/alarm-list';
 import { ForecastCard } from '../../components/forecast-card/forecast-card';
 import { ServiceOrderList } from '../../components/service-order-list/service-order-list';
 import { Overview } from '../../services/dtos/overview';
+import { AuthService } from '../../services/auth-service';
 import { SolarDataService } from '../../services/solar-data-service';
-import { TABS } from '../../shared/constants/system-tabs';
+import { ROLES } from '../../shared/constants/roles';
+import { TABS, TECHNICIAN_TABS } from '../../shared/constants/system-tabs';
 
 @Component({
   selector: 'app-system-detail-view',
@@ -16,7 +18,8 @@ import { TABS } from '../../shared/constants/system-tabs';
 })
 export class SystemDetailView implements OnInit {
   readonly id = input.required<string>();
-  protected readonly tabs = TABS;
+  protected readonly isTechnician = inject(AuthService).session()?.role === ROLES.technician;
+  protected readonly tabs = this.isTechnician ? TABS.filter((t) => TECHNICIAN_TABS.includes(t[0])) : TABS;
   protected readonly tab = signal<(typeof TABS)[number][0]>('naprave');
   protected readonly days = signal(7);
   protected readonly o = signal<Overview | null>(null);
