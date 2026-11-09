@@ -11,6 +11,8 @@ public abstract class CrudController<T>(AppDbContext db) : OwnedController(db) w
 
     protected virtual Task<string?> Prepare(T item, T? existing) => Task.FromResult<string?>(null);
 
+    protected virtual Task<string?> CanDelete(T item) => Task.FromResult<string?>(null);
+
     [HttpGet]
     public async Task<ActionResult<List<T>>> GetAll() => await Visible().AsNoTracking().ToListAsync();
 
@@ -63,6 +65,10 @@ public abstract class CrudController<T>(AppDbContext db) : OwnedController(db) w
         if (existing is null)
             return NotFound();
 
+        if (await CanDelete(existing) is { } error)
+            return Conflict(error);
+
+        // shortcut: preverjanje in brisanje nista v isti transakciji, nalog, ustvarjen vmes, bi se izbrisal; nadgradi s transakcijo, ko bo to težava
         Db.Remove(existing);
         await Db.SaveChangesAsync();
 
