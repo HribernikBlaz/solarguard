@@ -1,0 +1,79 @@
+<div class="page-head">
+  <h1>Pregled platforme</h1>
+  <button type="button" (click)="load()">Osveži</button>
+</div>
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
+
+@if (overview(); as o) {
+  <section class="kpis">
+    <div class="kpi">
+      <span>Sistemi</span>
+      <strong>{{ o.installations }}</strong>
+    </div>
+    <div class="kpi">
+      <span>Naprave</span>
+      <strong>{{ o.devices }}</strong>
+    </div>
+    <div class="kpi">
+      <span>Aktivni uporabniki</span>
+      <strong>{{ o.activeUsers }}</strong>
+      <small>od {{ o.users }} registriranih, prijava v zadnjih 30 dneh</small>
+    </div>
+  </section>
+
+  <h2>Servisni nalogi</h2>
+  <section class="kpis">
+    @for (card of orderCards; track card.key) {
+      <div class="kpi">
+        <span>{{ card.label }}</span>
+        <strong>{{ o.orders[card.key] }}</strong>
+      </div>
+    }
+  </section>
+
+  <h2>Sistemi</h2>
+  <div class="toolbar">
+    <label>
+      Status
+      <select [ngModel]="status()" (ngModelChange)="setStatus($event)">
+        <option value="">Vsi</option>
+        <option value="active">Aktiven</option>
+        <option value="inactive">Neaktiven</option>
+      </select>
+    </label>
+    <label>
+      Iskanje
+      <input type="search" placeholder="Naziv ali lastnik ..." [ngModel]="search()" (ngModelChange)="setSearch($event)" />
+    </label>
+  </div>
+  <p class="muted">Sistem je aktiven, če je v zadnjih 24 urah poslal meritev.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Naziv</th><th>Lastnik</th><th>Naslov</th><th>Nazivna moč</th><th>Naprave</th><th>Zadnja meritev</th><th>Odprti nalogi</th><th>Status</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (s of paged.rows(); track s.id) {
+        <tr>
+          <td>{{ s.name }}</td>
+          <td>{{ s.ownerName ?? '–' }}<br /><span class="muted">{{ s.ownerEmail }}</span></td>
+          <td>{{ s.address }}</td>
+          <td>{{ s.ratedPowerKw }} kW</td>
+          <td>{{ s.deviceCount }}</td>
+          <td>{{ s.lastMeasurementAt ? (s.lastMeasurementAt | date: 'dd.MM.yyyy HH:mm') : 'ni meritev' }}</td>
+          <td>{{ s.openOrders }}</td>
+          <td><span class="badge" [attr.data-status]="s.active ? 'OK' : null">{{ s.active ? 'Aktiven' : 'Neaktiven' }}</span></td>
+          <td><a class="btn" [routerLink]="['/sistemi', s.id]">Podrobnosti</a></td>
+        </tr>
+      } @empty {
+        <tr><td colspan="9">Ni sistemov.</td></tr>
+      }
+    </tbody>
+  </table>
+  <app-pager [total]="systems().length" [(page)]="paged.page" [(size)]="paged.size" />
+} @else if (!error()) {
+  <p class="muted">Nalagam ...</p>
+}
