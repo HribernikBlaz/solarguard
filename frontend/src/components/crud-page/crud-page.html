@@ -1,83 +1,31 @@
-<h1>{{ config().title }}</h1>
-@if (config().filter || config().sortBy) {
-  <div class="page-head">
-    @if (config().filter; as f) {
-      <label>
-        {{ f.label }}:
-        <select [ngModel]="filterValue()" (ngModelChange)="filterValue.set($event)">
-          <option value="">Vsi</option>
-          @for (o of f.options; track o) {
-            <option [value]="o">{{ o }}</option>
-          }
-        </select>
-      </label>
-    }
-    @if (config().sortBy) {
-      <button type="button" (click)="newestFirst.set(!newestFirst())">
-        Razvrsti: {{ newestFirst() ? 'najnovejše prej' : 'najstarejše prej' }}
-      </button>
-    }
-  </div>
-}
+<div class="page-head">
+  <h1>{{ config().title }}</h1>
+  @if (canWrite()) {
+    <button type="button" (click)="add()">Dodaj {{ config().itemName }}</button>
+  }
+</div>
+<div class="toolbar">
+  @if (config().filter; as f) {
+    <label>
+      {{ f.label }}
+      <select [ngModel]="filterValue()" (ngModelChange)="setFilter($event)">
+        <option value="">Vsi</option>
+        @for (o of f.options; track o) {
+          <option [value]="o">{{ o }}</option>
+        }
+      </select>
+    </label>
+  }
+  <label>
+    Iskanje
+    <input type="search" placeholder="Poišči ..." [ngModel]="search()" (ngModelChange)="setSearch($event)" />
+  </label>
+  @if (config().sortBy) {
+    <button type="button" (click)="toggleSort()">Razvrsti: {{ newestFirst() ? 'najnovejše prej' : 'najstarejše prej' }}</button>
+  }
+</div>
 @if (error()) {
   <p class="error">{{ error() }}</p>
-}
-
-@if (form(); as f) {
-  <form (ngSubmit)="save()">
-    @for (field of fields(); track field.key) {
-      <label>
-        {{ field.label }}
-        @switch (field.type) {
-          @case ('select') {
-            <select [name]="field.key" [(ngModel)]="f[field.key]" [required]="!field.optional">
-              @if (field.optional) {
-                <option [ngValue]="null">-- brez --</option>
-              } @else {
-                <option value="" disabled>-- izberi --</option>
-              }
-              @if (field.ref; as ref) {
-                @for (r of refs()[ref.path]; track r.id) {
-                  <option [ngValue]="r.id">{{ ref.label(r) }}</option>
-                }
-              } @else {
-                @for (o of field.options; track o) {
-                  <option [value]="o">{{ o }}</option>
-                }
-              }
-            </select>
-          }
-          @case ('checkbox') {
-            <input type="checkbox" [name]="field.key" [(ngModel)]="f[field.key]" />
-          }
-          @case ('datetime') {
-            <input
-              type="datetime-local"
-              [name]="field.key"
-              [ngModel]="toLocal(f[field.key])"
-              (ngModelChange)="f[field.key] = fromLocal($event)"
-              required
-            />
-          }
-          @default {
-            <input
-              [type]="field.type"
-              step="any"
-              [name]="field.key"
-              [(ngModel)]="f[field.key]"
-              [required]="!field.optional"
-            />
-          }
-        }
-      </label>
-    }
-    <div class="buttons">
-      <button type="submit">Shrani</button>
-      <button type="button" (click)="form.set(null)">Prekliči</button>
-    </div>
-  </form>
-} @else if (canWrite()) {
-  <button type="button" (click)="add()">Dodaj</button>
 }
 
 <table>
@@ -90,7 +38,7 @@
     </tr>
   </thead>
   <tbody>
-    @for (row of rows(); track row.id) {
+    @for (row of paged.rows(); track row['id']) {
       <tr>
         @for (field of fields(); track field.key) {
           <td>
@@ -112,18 +60,91 @@
         }
         <td class="buttons">
           @if (config().detail; as detail) {
-            <a class="btn" [routerLink]="[detail, row.id]">Podrobnosti</a>
+            <a class="btn" [routerLink]="[detail, row['id']]">Podrobnosti</a>
           }
           @if (canWrite()) {
             <button type="button" (click)="edit(row)">Uredi</button>
-            <button type="button" (click)="remove(row)">Izbriši</button>
+            <button type="button" (click)="askDelete(row)">Izbriši</button>
           }
         </td>
       </tr>
     } @empty {
       <tr>
-        <td [attr.colspan]="fields().length + 1">Ni zapisov.</td>
+        <td [attr.colspan]="fields().length + 1">{{ ready() ? 'Ni zapisov.' : 'Nalagam ...' }}</td>
       </tr>
     }
   </tbody>
 </table>
+<app-pager [total]="rows().length" [(page)]="paged.page" [(size)]="paged.size" />
+
+@if (form(); as f) {
+  <app-dialog [title]="formTitle()" [dismissOnBackdrop]="false" (dismissed)="closeForm()">
+    <form (ngSubmit)="save()">
+      @for (field of fields(); track field.key) {
+        <label>
+          {{ field.label }}
+          @switch (field.type) {
+            @case ('select') {
+              <select [name]="field.key" [(ngModel)]="f[field.key]" [required]="!field.optional">
+                @if (field.optional) {
+                  <option [ngValue]="null">-- brez --</option>
+                } @else {
+                  <option value="" disabled>-- izberi --</option>
+                }
+                @if (field.ref; as ref) {
+                  @for (r of refs()[ref.path]; track r['id']) {
+                    <option [ngValue]="r['id']">{{ ref.label(r) }}</option>
+                  }
+                } @else {
+                  @for (o of field.options; track o) {
+                    <option [value]="o">{{ o }}</option>
+                  }
+                }
+              </select>
+            }
+            @case ('checkbox') {
+              <input type="checkbox" [name]="field.key" [(ngModel)]="f[field.key]" />
+            }
+            @case ('datetime') {
+              <input
+                type="datetime-local"
+                [name]="field.key"
+                [ngModel]="toLocal(f[field.key])"
+                (ngModelChange)="f[field.key] = fromLocal($event)"
+                required
+              />
+            }
+            @default {
+              <input
+                [type]="field.type"
+                step="any"
+                [name]="field.key"
+                [(ngModel)]="f[field.key]"
+                [required]="!field.optional"
+              />
+            }
+          }
+        </label>
+      }
+      @if (formError()) {
+        <p class="error full">{{ formError() }}</p>
+      }
+      <div class="dialog-actions full">
+        <button type="button" (click)="closeForm()">Prekliči</button>
+        <button type="submit" [disabled]="saving()">{{ f['id'] ? 'Shrani' : 'Dodaj' }}</button>
+      </div>
+    </form>
+  </app-dialog>
+}
+
+@if (pendingDelete(); as row) {
+  <app-confirm-dialog
+    [title]="'Izbriši ' + config().itemName"
+    [message]="deleteMessage(row)"
+    confirmLabel="Izbriši"
+    [busy]="deleting()"
+    [error]="deleteError()"
+    (confirmed)="confirmDelete(row)"
+    (cancelled)="cancelDelete()"
+  />
+}

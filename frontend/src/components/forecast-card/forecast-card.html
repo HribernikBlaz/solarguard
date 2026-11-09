@@ -16,11 +16,14 @@
             <td>{{ r.kwh | number: '1.1-1' }}</td>
             <td>{{ r.cloud === null ? '–' : (r.cloud | number: '1.0-0') + ' %' }}</td>
             <td><span class="badge" [attr.data-grade]="r.tone">{{ r.grade }}</span></td>
-            <td>{{ r.kwh * cena | number: '1.2-2' }}</td>
+            <td>{{ r.saving === null ? '–' : (r.saving | number: '1.2-2') }}</td>
           </tr>
         }
       </tbody>
     </table>
+    @if (price() === null) {
+      <p class="muted">Cena elektrike ni vnesena, zato prihranek ni prikazan. Vnesite jo pri sistemu.</p>
+    }
   } @else {
     <p class="error">Napoved ni na voljo (Open-Meteo ni odgovoril).</p>
   }

@@ -62,11 +62,13 @@ describe('ServiceOrderList', () => {
     expect(buttons(el)).toContain('Označi: V obdelavi');
   });
 
-  it('asks for a summary before completing and sends it', async () => {
+  it('asks for a summary in a dialog before completing and sends it', async () => {
     const { http, fixture, el } = await setup([order('mine', 'InProgress', true)]);
 
     [...el.querySelectorAll('button')].find((b) => b.textContent!.trim() === 'Zaključi')!.click();
     fixture.detectChanges();
+    expect(el.querySelector('dialog')!.textContent).toContain('Opis opravljenega dela');
+    expect(el.querySelector('dialog')!.textContent).toContain('Opis opravljenega dela');
     const submit = [...el.querySelectorAll('button')].find((b) => b.textContent!.trim() === 'Zaključi nalog')!;
     expect(submit.disabled).toBe(true);
 
@@ -91,10 +93,10 @@ describe('ServiceOrderList', () => {
     expect(buttons(el)).toContain('Zaključi');
   });
 
-  it('loads the history when the details are opened', async () => {
+  it('loads the history when the details dialog is opened', async () => {
     const { http, fixture, el } = await setup([order('mine', 'Assigned', false)]);
 
-    [...el.querySelectorAll('button')].find((b) => b.textContent!.trim() === 'Potek')!.click();
+    [...el.querySelectorAll('button')].find((b) => b.textContent!.trim() === 'Podrobnosti')!.click();
     fixture.detectChanges();
     TestBed.tick();
     http.expectOne('/api/service-orders/mine/history').flush([{ status: 'Assigned', changedAt: '2026-11-03T11:00:00Z', changedByName: 'Sergej Serviser' }]);

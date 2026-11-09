@@ -5,22 +5,25 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { EMPTY, Subject, catchError, map, switchMap, timer } from 'rxjs';
 import { Chart } from '../../components/chart/chart';
+import { Pager } from '../../components/pager/pager';
 import { SavingsCard } from '../../components/savings-card/savings-card';
 import { Overview } from '../../services/dtos/overview';
 import { ProductionComparison } from '../../services/dtos/production-comparison';
 import { ProductionService } from '../../services/production-service';
 import { SolarDataService } from '../../services/solar-data-service';
 import { Period } from '../../shared/models/period';
+import { pagedList } from '../../shared/utils/paging';
 import { productionSeries } from '../../shared/utils/production-series';
 
 @Component({
   selector: 'app-dashboard-view',
-  imports: [FormsModule, DatePipe, DecimalPipe, RouterLink, Chart, SavingsCard],
+  imports: [FormsModule, DatePipe, DecimalPipe, RouterLink, Chart, Pager, SavingsCard],
   templateUrl: './dashboard-view.html',
 })
 export class DashboardView implements OnInit {
   protected readonly overviews = signal<Overview[]>([]);
   protected readonly selectedId = signal('');
+  protected readonly paged = pagedList(this.overviews);
   protected readonly period = signal<Period>('dan');
   protected readonly error = signal('');
   private readonly loaded = signal<{ id: string; data: ProductionComparison } | null>(null);

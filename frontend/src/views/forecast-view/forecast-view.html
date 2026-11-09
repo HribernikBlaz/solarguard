@@ -1,23 +1,31 @@
 <div class="page-head">
   <h1>Napoved proizvodnje</h1>
+</div>
+<p class="muted">Izberite sistem, da odprete napoved za njegovo lokacijo.</p>
+<div class="toolbar">
   <label>
-    Število dni
-    <select [ngModel]="days()" (ngModelChange)="days.set($event)">
-      @for (n of [3, 5, 7, 14]; track n) {
-        <option [ngValue]="n">{{ n }}</option>
-      }
-    </select>
+    Iskanje
+    <input type="search" placeholder="Naziv ali naslov ..." [ngModel]="search()" (ngModelChange)="setSearch($event)" />
   </label>
 </div>
 @if (error()) {
   <p class="error">{{ error() }}</p>
 }
-@for (o of overviews(); track o.inst.id) {
-  <app-forecast-card [o]="o" [days]="days()" />
-} @empty {
-  <p>Ni sistemov.</p>
-}
-<p class="muted">
-  Napoved sevanja na nagnjeno ploskev (30°, jug) za lokacijo vsakega sistema: Open-Meteo (open-meteo.com). Pričakovana proizvodnja = sevanje × nazivna moč × 0,8.
-  Napoved se osveži vsakih 15 minut.
-</p>
+<table>
+  <thead>
+    <tr><th>Naziv</th><th>Naslov</th><th>Nazivna moč</th><th></th></tr>
+  </thead>
+  <tbody>
+    @for (i of paged.rows(); track i.id) {
+      <tr>
+        <td>{{ i.name }}</td>
+        <td>{{ i.address }}</td>
+        <td>{{ i.ratedPowerKw }} kW</td>
+        <td><a class="btn" [routerLink]="['/napoved', i.id]">Napoved</a></td>
+      </tr>
+    } @empty {
+      <tr><td colspan="4">{{ ready() ? 'Ni sistemov.' : 'Nalagam ...' }}</td></tr>
+    }
+  </tbody>
+</table>
+<app-pager [total]="filtered().length" [(page)]="paged.page" [(size)]="paged.size" />

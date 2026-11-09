@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { Overview } from '../../services/dtos/overview';
 import { SolarDataService } from '../../services/solar-data-service';
-import { CENA_KWH } from '../../shared/constants/production-rules';
 import { COLORS } from '../../shared/constants/status-colors';
 import { dayKey, sumByDay } from '../../shared/utils/day';
 
@@ -50,6 +49,17 @@ export class MapView implements AfterViewInit, OnDestroy {
     }
   }
 
+  private tomorrowText(price: number | null, tomorrowKwh: number | undefined) {
+    if (tomorrowKwh === undefined) {
+      return 'Napoved ni na voljo';
+    }
+    if (price === null) {
+      return `Jutri pričakujem ${tomorrowKwh.toFixed(1)} kWh`;
+    }
+
+    return `Jutri pričakujem ${tomorrowKwh.toFixed(1)} kWh (${(tomorrowKwh * price).toFixed(2)} €)`;
+  }
+
   private popup(o: Overview) {
     const days = sumByDay(o.expected);
     const tomorrow = days.get(dayKey(Date.now() + 24 * 3_600_000));
@@ -58,7 +68,7 @@ export class MapView implements AfterViewInit, OnDestroy {
     line(o.inst.name, 'strong');
     line(o.inst.address);
     line(`Nazivna moč: ${o.inst.ratedPowerKw} kW · ${o.result.status}`);
-    line(tomorrow === undefined ? 'Napoved ni na voljo' : `Jutri pričakujem ${tomorrow.toFixed(1)} kWh (${(tomorrow * CENA_KWH).toFixed(2)} €)`);
+    line(this.tomorrowText(o.inst.electricityPrice, tomorrow));
     const a = Object.assign(document.createElement('a'), { href: `/sistemi/${o.inst.id}`, textContent: 'Podrobnosti →' });
     a.addEventListener('click', (e) => {
       e.preventDefault();

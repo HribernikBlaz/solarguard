@@ -16,20 +16,24 @@ export class SolarDataService {
   private readonly http = inject(HttpClient);
   private readonly forecast = inject(ForecastService);
 
-  overview(): Observable<Overview[]> {
+  // Z installationId se vreme prebere samo za ta sistem.
+  overview(installationId?: string): Observable<Overview[]> {
     return forkJoin({
       installations: this.http.get<Installation[]>('/api/installations'),
       devices: this.http.get<Device[]>('/api/devices'),
       measurements: this.http.get<Measurement[]>('/api/measurements'),
       alarms: this.http.get<Alarm[]>('/api/alarms'),
     }).pipe(
-      switchMap(({ installations, devices, measurements, alarms }) =>
-        installations.length
-          ? forkJoin(installations.map((i) => this.forecast.get(i).pipe(catchError(() => of(null))))).pipe(
-            map((weathers) => installations.map((i, k) => build(i, devices, measurements, alarms, weathers[k]))),
-          )
-          : of([]),
-      ),
+      switchMap(({ installations, devices, measurements, alarms }) => {
+        const selected = installationId ? installations.filter((i) => i.id === installationId) : installations;
+        if (!selected.length) {
+          return of([]);
+        }
+
+        return forkJoin(selected.map((i) => this.forecast.get(i).pipe(catchError(() => of(null))))).pipe(
+          map((weathers) => selected.map((i, k) => build(i, devices, measurements, alarms, weathers[k]))),
+        );
+      }),
     );
   }
 }

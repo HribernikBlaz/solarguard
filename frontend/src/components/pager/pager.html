@@ -1,0 +1,16 @@
+@if (visible()) {
+  <nav class="pager" aria-label="Strani">
+    <span class="muted">{{ from() }}–{{ to() }} od {{ total() }}</span>
+    <button type="button" aria-label="Prejšnja stran" [disabled]="current() <= 1" (click)="go(current() - 1)">‹</button>
+    <span>Stran {{ current() }} od {{ pages() }}</span>
+    <button type="button" aria-label="Naslednja stran" [disabled]="current() >= pages()" (click)="go(current() + 1)">›</button>
+    <label class="muted">
+      Na stran
+      <select [value]="size()" (change)="resize(+$any($event.target).value)">
+        @for (n of sizes; track n) {
+          <option [value]="n">{{ n }}</option>
+        }
+      </select>
+    </label>
+  </nav>
+}

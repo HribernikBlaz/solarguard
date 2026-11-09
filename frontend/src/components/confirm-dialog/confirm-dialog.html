@@ -1,0 +1,10 @@
+<app-dialog [title]="title()" (dismissed)="cancelled.emit()">
+  <p>{{ message() }}</p>
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+  <div class="dialog-actions">
+    <button type="button" (click)="cancelled.emit()">Prekliči</button>
+    <button type="button" [disabled]="busy()" (click)="confirmed.emit()">{{ confirmLabel() }}</button>
+  </div>
+</app-dialog>
