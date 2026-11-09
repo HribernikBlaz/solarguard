@@ -17,6 +17,15 @@ public record ServiceOrderView(
     string? Summary,
     bool IsAssignedToMe);
 
+public record ServiceHistoryItem(
+    Guid OrderId,
+    ServiceOrderStatus Status,
+    DateTime CreatedAt,
+    DateTime? ClosedAt,
+    string Description,
+    string? Summary,
+    string? TechnicianName);
+
 public record ServiceOrderChangeView(ServiceOrderStatus Status, DateTime ChangedAt, string ChangedByName);
 
 public record ChangeStatusRequest(ServiceOrderStatus Status, string? Summary);
