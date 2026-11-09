@@ -6,3 +6,9 @@ export const ORDER_STATUS_LABELS: Record<ServiceOrder['status'], string> = {
   InProgress: 'V obdelavi',
   Completed: 'Zaključen',
 };
+
+export const NEXT_ORDER_STATUS: Partial<Record<ServiceOrder['status'], ServiceOrder['status']>> = {
+  Open: 'Assigned',
+  Assigned: 'InProgress',
+  InProgress: 'Completed',
+};

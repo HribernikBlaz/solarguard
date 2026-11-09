@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { EMPTY, Subject, catchError, switchMap } from 'rxjs';
+import { EMPTY, Subject, catchError, switchMap, tap } from 'rxjs';
 import { ServiceOrder } from './dtos/service-order';
+import { ServiceOrderChange } from './dtos/service-order-change';
 
 @Injectable({ providedIn: 'root' })
 export class ServiceOrderService {
@@ -25,6 +26,14 @@ export class ServiceOrderService {
 
   refresh() {
     this.requests.next();
+  }
+
+  changeStatus(id: string, status: ServiceOrder['status'], summary: string) {
+    return this.http.put<void>(`/api/service-orders/${id}/status`, { status, summary }).pipe(tap(() => this.refresh()));
+  }
+
+  history(id: string) {
+    return this.http.get<ServiceOrderChange[]>(`/api/service-orders/${id}/history`);
   }
 
   clear() {

@@ -4,9 +4,12 @@
 @if (service.failed() && !service.loaded()) {
   <p class="error">Servisnih nalogov ni mogoče naložiti.</p>
 }
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
 <table>
   <thead>
-    <tr><th>Sistem</th><th>Naprava</th><th>Resnost</th><th>Opis</th><th>Dodeljeno</th><th>Status</th><th>Ustvarjen</th></tr>
+    <tr><th>Sistem</th><th>Naprava</th><th>Resnost</th><th>Opis</th><th>Dodeljeno</th><th>Status</th><th>Ustvarjen</th><th></th></tr>
   </thead>
   <tbody>
     @for (o of rows(); track o.id) {
@@ -16,11 +19,53 @@
         <td><span class="badge" [attr.data-status]="severityLabels[o.severity]">{{ severityLabels[o.severity] }}</span></td>
         <td>{{ o.description }}</td>
         <td>{{ o.assigneeName ?? 'ni dodeljen' }}</td>
-        <td>{{ statusLabels[o.status] }}</td>
+        <td>
+          {{ statusLabels[o.status] }}
+          @if (next(o); as step) {
+            <button type="button" class="btn" [disabled]="busyId() === o.id" (click)="advance(o)">{{ actionLabel(step) }}</button>
+          }
+        </td>
         <td>{{ o.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+        <td><button type="button" class="btn" (click)="toggle(o)">{{ openId() === o.id ? 'Skrij potek' : 'Potek' }}</button></td>
       </tr>
+      @if (closingId() === o.id && next(o) === 'Completed') {
+        <tr>
+          <td colspan="8">
+            <form (ngSubmit)="finish(o)">
+              <label>
+                Opis opravljenega dela
+                <textarea name="summary" rows="3" [maxlength]="summaryMax" [(ngModel)]="summary"></textarea>
+              </label>
+              <div class="buttons">
+                <button type="submit" class="btn" [disabled]="busyId() === o.id || !summary().trim()">Zaključi nalog</button>
+                <button type="button" class="btn" (click)="closingId.set(null)">Prekliči</button>
+              </div>
+            </form>
+          </td>
+        </tr>
+      }
+      @if (openId() === o.id) {
+        <tr>
+          <td colspan="8">
+            @if (o.summary) {
+              <p><strong>Opis opravljenega dela:</strong> {{ o.summary }}</p>
+            }
+            @if (changes(); as list) {
+              @for (c of list; track c.changedAt) {
+                <div class="muted">{{ c.changedAt | date: 'dd.MM.yyyy HH:mm' }}: {{ statusLabels[c.status] }} ({{ c.changedByName }})</div>
+              } @empty {
+                <div class="muted">Status še ni bil spremenjen.</div>
+              }
+            } @else if (historyFailed()) {
+              <div class="error">Poteka ni mogoče naložiti.</div>
+            } @else {
+              <div class="muted">Nalagam ...</div>
+            }
+          </td>
+        </tr>
+      }
     } @empty {
-      <tr><td colspan="7">{{ service.loaded() ? 'Ni servisnih nalogov.' : 'Nalagam ...' }}</td></tr>
+      <tr><td colspan="8">{{ service.loaded() ? 'Ni servisnih nalogov.' : 'Nalagam ...' }}</td></tr>
     }
   </tbody>
 </table>
