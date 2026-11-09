@@ -18,6 +18,8 @@ const order = (id: string, status: ServiceOrder['status']): ServiceOrder => ({
   assigneeName: null,
   createdAt: '2026-11-03T10:00:00Z',
   closedAt: null,
+  summary: null,
+  isAssignedToMe: false,
 });
 
 describe('ServiceOrderService', () => {
@@ -45,6 +47,17 @@ describe('ServiceOrderService', () => {
 
     expect(service.failed()).toBe(true);
     expect(service.orders().length).toBe(1);
+  });
+
+  it('reloads the orders after a successful status change', () => {
+    const service = TestBed.inject(ServiceOrderService);
+    const http = TestBed.inject(HttpTestingController);
+
+    service.changeStatus('1', 'Assigned', '').subscribe();
+    http.expectOne('/api/service-orders/1/status').flush(null);
+
+    http.expectOne('/api/service-orders').flush([order('1', 'Assigned')]);
+    expect(service.orders()[0].status).toBe('Assigned');
   });
 
   it('forgets the orders on clear', () => {

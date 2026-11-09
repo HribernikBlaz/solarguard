@@ -12,4 +12,6 @@ export interface ServiceOrder {
   assigneeName: string | null;
   createdAt: string;
   closedAt: string | null;
+  summary: string | null;
+  isAssignedToMe: boolean;
 }

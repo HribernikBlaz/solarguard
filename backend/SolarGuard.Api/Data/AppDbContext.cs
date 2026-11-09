@@ -13,6 +13,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Measurement> Measurements => Set<Measurement>();
     public DbSet<Alarm> Alarms => Set<Alarm>();
     public DbSet<ServiceOrder> ServiceOrders => Set<ServiceOrder>();
+    public DbSet<ServiceOrderChange> ServiceOrderChanges => Set<ServiceOrderChange>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -38,7 +39,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         b.Entity<ServiceOrder>().HasOne<Alarm>().WithMany().HasForeignKey(o => o.AlarmId);
         b.Entity<ServiceOrder>().HasOne<Installation>().WithMany().HasForeignKey(o => o.InstallationId);
         b.Entity<ServiceOrder>().HasOne<AppUser>().WithMany().HasForeignKey(o => o.AssigneeId).OnDelete(DeleteBehavior.Restrict);
-        b.Entity<ServiceOrder>().Property(o => o.Status).HasConversion<string>();
+        b.Entity<ServiceOrder>().Property(o => o.Status).HasConversion<string>().IsConcurrencyToken();
+        b.Entity<ServiceOrder>().Property(o => o.Summary).HasMaxLength(ServiceOrder.MaxSummaryLength);
+        b.Entity<ServiceOrderChange>().HasOne<ServiceOrder>().WithMany().HasForeignKey(c => c.ServiceOrderId);
+        b.Entity<ServiceOrderChange>().HasOne<AppUser>().WithMany().HasForeignKey(c => c.ChangedById).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<ServiceOrderChange>().Property(c => c.Status).HasConversion<string>();
+        b.Entity<ServiceOrderChange>().HasIndex(c => new { c.ServiceOrderId, c.ChangedAt });
         b.Entity<ServiceOrder>().HasIndex(o => o.AlarmId).IsUnique();
         b.Entity<ServiceOrder>().HasIndex(o => new { o.AssigneeId, o.Status });
         b.Entity<Alarm>().HasIndex(a => new { a.DeviceId, a.Type, a.Severity }).IsUnique().HasFilter("\"Status\" = 'Active'");
