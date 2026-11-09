@@ -274,3 +274,24 @@ VALUES ('20261109212118_ZadnjaPrijava', '10.0.13');
 
 COMMIT;
 
+START TRANSACTION;
+CREATE TABLE "Notifications" (
+    "Id" uuid NOT NULL,
+    "UserId" uuid NOT NULL,
+    "Kind" text NOT NULL,
+    "Message" text NOT NULL,
+    "CreatedAt" timestamp with time zone NOT NULL,
+    "DedupeKey" text NOT NULL,
+    CONSTRAINT "PK_Notifications" PRIMARY KEY ("Id"),
+    CONSTRAINT "FK_Notifications_AspNetUsers_UserId" FOREIGN KEY ("UserId") REFERENCES "AspNetUsers" ("Id") ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX "IX_Notifications_DedupeKey" ON "Notifications" ("DedupeKey");
+
+CREATE INDEX "IX_Notifications_UserId_CreatedAt" ON "Notifications" ("UserId", "CreatedAt");
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20261109221241_Obvestila', '10.0.13');
+
+COMMIT;
+

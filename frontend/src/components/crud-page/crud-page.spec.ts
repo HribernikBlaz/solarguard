@@ -44,7 +44,7 @@ describe('CrudPage', () => {
     const order = () => [...fixture.nativeElement.querySelectorAll('tbody tr')].map((r: HTMLElement) => r.children[2].textContent!.trim());
     expect(order()).toEqual(['Nova', 'Razsmernik', 'Stara']);
 
-    fixture.componentInstance['filterValue'].set('Panel');
+    fixture.componentInstance['setFilter']('type', 'Panel');
     fixture.componentInstance['newestFirst'].set(false);
     fixture.detectChanges();
     expect(order()).toEqual(['Stara', 'Nova']);
@@ -180,6 +180,29 @@ describe('CrudPage', () => {
     fixture.detectChanges();
 
     expect(body()).toBe(1);
+  });
+
+  const warrantyDevice = (id: string, warrantyUntil: string) => ({ ...device(id), warrantyUntil });
+  const isoDay = (offset: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  it('marks the warranty and filters the devices by it', async () => {
+    const { fixture, el } = await open('Lastnik', [warrantyDevice('Veljavna', isoDay(200)), warrantyDevice('Kmalu', isoDay(10)), warrantyDevice('Potekla', isoDay(-5))]);
+    const badges = () => [...el.querySelectorAll('tbody .badge')].map((b) => b.textContent!.trim()).sort();
+
+    expect(badges()).toEqual(['Potekla', 'Poteče čez 10 dni', 'Veljavna']);
+
+    fixture.componentInstance['setFilter']('warranty', 'expired');
+    fixture.detectChanges();
+    expect(badges()).toEqual(['Potekla']);
+
+    fixture.componentInstance['setFilter']('warranty', 'expiring');
+    fixture.detectChanges();
+    expect(badges()).toEqual(['Poteče čez 10 dni']);
   });
 
   it('shows the technician name to an admin', async () => {

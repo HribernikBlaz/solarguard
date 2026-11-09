@@ -11,6 +11,7 @@ import { Field } from '../../shared/models/field';
 import { PageConfig } from '../../shared/models/page-config';
 import { fromLocalInput, toLocalInput } from '../../shared/utils/datetime';
 import { pagedList } from '../../shared/utils/paging';
+import { warrantyStatus } from '../../shared/utils/warranty';
 import { ConfirmDialog } from '../confirm-dialog/confirm-dialog';
 import { Dialog } from '../dialog/dialog';
 import { Pager } from '../pager/pager';
@@ -24,7 +25,7 @@ type Row = Record<string, any>;
 })
 export class CrudPage implements OnInit {
   readonly config = input.required<PageConfig>();
-  protected readonly filterValue = signal('');
+  protected readonly filterValues = signal<Record<string, string>>({});
   protected readonly search = signal('');
   protected readonly newestFirst = signal(true);
   protected readonly refs = signal<Record<string, Row[]>>({});
@@ -52,12 +53,15 @@ export class CrudPage implements OnInit {
   protected readonly formTitle = computed(() => `${this.form()?.['id'] ? 'Uredi' : 'Dodaj'} ${this.config().itemName}`);
 
   protected readonly rows = computed(() => {
-    const { filter, sortBy } = this.config();
+    const { filters, sortBy } = this.config();
     const query = this.search().trim().toLowerCase();
     let rows = this.loaded();
 
-    if (filter && this.filterValue()) {
-      rows = rows.filter((r) => r[filter.key] === this.filterValue());
+    for (const filter of filters ?? []) {
+      const value = this.filterValues()[filter.id];
+      if (value) {
+        rows = rows.filter((r) => filter.match(r, value));
+      }
     }
     if (query) {
       rows = rows.filter((r) => this.text(r).includes(query));
@@ -91,8 +95,8 @@ export class CrudPage implements OnInit {
     return target ? ref.label(target) : row[f.key];
   }
 
-  protected setFilter(value: string) {
-    this.filterValue.set(value);
+  protected setFilter(id: string, value: string) {
+    this.filterValues.update((values) => ({ ...values, [id]: value }));
     this.paged.page.set(1);
   }
 
@@ -104,6 +108,22 @@ export class CrudPage implements OnInit {
   protected toggleSort() {
     this.newestFirst.set(!this.newestFirst());
     this.paged.page.set(1);
+  }
+
+  protected warranty(row: Row, f: Field) {
+    if (f.badge !== 'warranty') {
+      return null;
+    }
+
+    const { state, daysLeft } = warrantyStatus(row[f.key]);
+    if (state === 'expired') {
+      return { label: 'Potekla', status: 'Alarm' };
+    }
+    if (state === 'expiring') {
+      return { label: `Poteče čez ${daysLeft} dni`, status: 'Opozorilo' };
+    }
+
+    return { label: 'Veljavna', status: 'OK' };
   }
 
   protected add() {
