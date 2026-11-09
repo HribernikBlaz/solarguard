@@ -7,7 +7,7 @@ using SolarGuard.Api.Services;
 namespace SolarGuard.Api.Controllers;
 
 [Route("api/installations")]
-public class InstallationsController(AppDbContext db, ProductionService production, SavingsService savings) : CrudController<Installation>(db)
+public class InstallationsController(AppDbContext db, ProductionService production, SavingsService savings, ForecastService forecast) : CrudController<Installation>(db)
 {
     private const decimal MaxPricePerKwh = 10m;
 
@@ -104,6 +104,19 @@ public class InstallationsController(AppDbContext db, ProductionService producti
             return NotFound();
 
         return await production.Compare(installation, period, DateTime.UtcNow);
+    }
+
+    [HttpGet("{id:guid}/forecast")]
+    public async Task<ActionResult<Forecast>> GetForecast(Guid id, int days = 7)
+    {
+        if (days < 1 || days > ForecastService.MaxDays)
+            return BadRequest($"Število dni mora biti med 1 in {ForecastService.MaxDays}.");
+
+        var installation = await Visible().AsNoTracking().FirstOrDefaultAsync(i => i.Id == id);
+        if (installation is null)
+            return NotFound();
+
+        return await forecast.Get(installation, days, DateTime.UtcNow);
     }
 
     [HttpGet("{id:guid}/savings")]
