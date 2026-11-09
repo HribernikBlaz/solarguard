@@ -1,0 +1,48 @@
+<app-dialog [title]="title()" [wide]="true" (dismissed)="dismissed.emit()">
+  <div class="toolbar">
+    <label>
+      Od
+      <input type="date" [ngModel]="from()" (ngModelChange)="from.set($event)" />
+    </label>
+    <label>
+      Do
+      <input type="date" [ngModel]="to()" (ngModelChange)="to.set($event)" />
+    </label>
+    @if (from() || to()) {
+      <button type="button" (click)="clear()">Počisti</button>
+    }
+  </div>
+  @if (rangeInvalid()) {
+    <p class="error">Datum Od mora biti pred datumom Do.</p>
+  } @else if (items(); as list) {
+    <table>
+      <thead>
+        <tr><th>Ustvarjen</th><th>Status</th><th>Težava</th><th>Opravljeno delo</th><th>Serviser</th><th>Zaključen</th></tr>
+      </thead>
+      <tbody>
+        @for (item of list; track item.orderId) {
+          <tr>
+            <td>{{ item.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+            <td>{{ statusLabels[item.status] }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.summary ?? '–' }}</td>
+            <td>{{ item.technicianName ?? '–' }}</td>
+            <td>{{ item.closedAt ? (item.closedAt | date: 'dd.MM.yyyy HH:mm') : '–' }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6">Ni zabeleženih servisnih posegov</td></tr>
+        }
+      </tbody>
+    </table>
+  } @else if (failed()) {
+    <p class="error">Zgodovine ni mogoče naložiti.</p>
+  } @else {
+    <p class="muted">Nalagam ...</p>
+  }
+  @if (failed() && items()) {
+    <p class="error">Osvežitev ni uspela, prikazani so prejšnji podatki.</p>
+  }
+  <div class="dialog-actions">
+    <button type="button" (click)="dismissed.emit()">Zapri</button>
+  </div>
+</app-dialog>
