@@ -14,6 +14,26 @@ public abstract class OwnedController(AppDbContext db) : ControllerBase
     protected Guid UserId => Guid.Parse(User.FindFirstValue("sub")!);
     protected bool IsAdmin => User.IsInRole(AppRoles.Admin);
 
+    protected bool IsTechnician => User.IsInRole(AppRoles.Technician);
+
+    // Za branje vidi serviser tudi sisteme, kjer je določen; OwnInstallations (pisanje) ga ne vključuje.
+    protected IQueryable<Installation> VisibleInstallations()
+    {
+        if (!IsTechnician)
+            return OwnInstallations();
+
+        var uid = UserId;
+
+        return db.Installations.Where(i => i.TechnicianId == uid);
+    }
+
+    protected IQueryable<Device> VisibleDevices()
+    {
+        var visible = VisibleInstallations();
+
+        return db.Devices.Where(d => visible.Any(i => i.Id == d.InstallationId));
+    }
+
     protected IQueryable<Installation> OwnInstallations()
     {
         if (IsAdmin)

@@ -11,7 +11,13 @@ public class InstallationsController(AppDbContext db, ProductionService producti
 {
     private const decimal MaxPricePerKwh = 10m;
 
-    protected override IQueryable<Installation> Visible() => OwnInstallations();
+    protected override IQueryable<Installation> Visible() => VisibleInstallations();
+
+    protected override void Redact(Installation item)
+    {
+        if (IsTechnician)
+            item.ElectricityPrice = null;
+    }
 
     protected override async Task<string?> Prepare(Installation item, Installation? existing)
     {
@@ -31,7 +37,7 @@ public class InstallationsController(AppDbContext db, ProductionService producti
             return null;
         }
 
-        if (item.TechnicianId is { } technicianId && !await IsTechnician(technicianId))
+        if (item.TechnicianId is { } technicianId && !await HasTechnicianRole(technicianId))
             return "Izbrani uporabnik ni serviser.";
 
         return null;
@@ -76,7 +82,7 @@ public class InstallationsController(AppDbContext db, ProductionService producti
         return null;
     }
 
-    private async Task<bool> IsTechnician(Guid userId) =>
+    private async Task<bool> HasTechnicianRole(Guid userId) =>
         await (from ur in Db.UserRoles
                join r in Db.Roles on ur.RoleId equals r.Id
                where ur.UserId == userId && r.Name == AppRoles.Technician
@@ -98,6 +104,9 @@ public class InstallationsController(AppDbContext db, ProductionService producti
     [HttpGet("{id:guid}/savings")]
     public async Task<ActionResult<Savings>> GetSavings(Guid id)
     {
+        if (IsTechnician)
+            return Forbid();
+
         var installation = await Visible().AsNoTracking().FirstOrDefaultAsync(i => i.Id == id);
         if (installation is null)
             return NotFound();

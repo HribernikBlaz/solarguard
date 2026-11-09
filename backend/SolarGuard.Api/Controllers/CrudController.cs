@@ -13,8 +13,21 @@ public abstract class CrudController<T>(AppDbContext db) : OwnedController(db) w
 
     protected virtual Task<string?> CanDelete(T item) => Task.FromResult<string?>(null);
 
+    protected virtual bool CanWrite => !IsTechnician;
+
+    // Skrije podatke, ki jih trenutni uporabnik ne sme videti (velja samo za branje, ne za zapis).
+    protected virtual void Redact(T item)
+    {
+    }
+
     [HttpGet]
-    public async Task<ActionResult<List<T>>> GetAll() => await Visible().AsNoTracking().ToListAsync();
+    public async Task<ActionResult<List<T>>> GetAll()
+    {
+        var items = await Visible().AsNoTracking().ToListAsync();
+        items.ForEach(Redact);
+
+        return items;
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<T>> Get(Guid id)
@@ -23,12 +36,17 @@ public abstract class CrudController<T>(AppDbContext db) : OwnedController(db) w
         if (item is null)
             return NotFound();
 
+        Redact(item);
+
         return item;
     }
 
     [HttpPost]
     public async Task<ActionResult<T>> Create(T item)
     {
+        if (!CanWrite)
+            return Forbid();
+
         item.Id = Guid.NewGuid();
         if (await Prepare(item, null) is { } error)
             return BadRequest(error);
@@ -43,6 +61,9 @@ public abstract class CrudController<T>(AppDbContext db) : OwnedController(db) w
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, T item)
     {
+        if (!CanWrite)
+            return Forbid();
+
         var existing = await Visible().FirstOrDefaultAsync(e => e.Id == id);
         if (existing is null)
             return NotFound();
@@ -61,6 +82,9 @@ public abstract class CrudController<T>(AppDbContext db) : OwnedController(db) w
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
+        if (!CanWrite)
+            return Forbid();
+
         var existing = await Visible().FirstOrDefaultAsync(e => e.Id == id);
         if (existing is null)
             return NotFound();
