@@ -5,13 +5,13 @@
   }
 </div>
 <div class="toolbar">
-  @if (config().filter; as f) {
+  @for (f of config().filters ?? []; track f.id) {
     <label>
       {{ f.label }}
-      <select [ngModel]="filterValue()" (ngModelChange)="setFilter($event)">
+      <select [ngModel]="filterValues()[f.id] ?? ''" (ngModelChange)="setFilter(f.id, $event)">
         <option value="">Vsi</option>
-        @for (o of f.options; track o) {
-          <option [value]="o">{{ o }}</option>
+        @for (o of f.options; track o.value) {
+          <option [value]="o.value">{{ o.label }}</option>
         }
       </select>
     </label>
@@ -48,6 +48,9 @@
               }
               @case ('date') {
                 {{ row[field.key] | date: 'dd.MM.yyyy' }}
+                @if (warranty(row, field); as w) {
+                  <span class="badge" [attr.data-status]="w.status">{{ w.label }}</span>
+                }
               }
               @case ('checkbox') {
                 {{ row[field.key] ? 'Da' : 'Ne' }}

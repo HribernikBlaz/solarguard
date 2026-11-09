@@ -6,5 +6,6 @@ export interface Field {
   optional?: boolean;
   adminOnly?: boolean;
   hiddenFor?: string[];
+  badge?: 'warranty';
   ref?: { path: string; label: (r: any) => string };
 }

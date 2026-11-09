@@ -1,0 +1,22 @@
+<div class="page-head">
+  <h1>Obvestila</h1>
+</div>
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
+<table>
+  <thead>
+    <tr><th>Čas</th><th>Obvestilo</th></tr>
+  </thead>
+  <tbody>
+    @for (n of paged.rows(); track n.id) {
+      <tr>
+        <td>{{ n.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+        <td>{{ n.message }}</td>
+      </tr>
+    } @empty {
+      <tr><td colspan="2">{{ ready() ? 'Ni obvestil.' : 'Nalagam ...' }}</td></tr>
+    }
+  </tbody>
+</table>
+<app-pager [total]="notifications().length" [(page)]="paged.page" [(size)]="paged.size" />

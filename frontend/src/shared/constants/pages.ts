@@ -1,4 +1,5 @@
 import { PageConfig } from '../models/page-config';
+import { warrantyStatus } from '../utils/warranty';
 import { ROLES } from './roles';
 
 const installationRef = { path: 'installations', label: (r: any) => r.name };
@@ -30,7 +31,27 @@ export const DEVICES: PageConfig = {
   path: 'devices',
   sortBy: 'installedOn',
   writeRoles: [ROLES.owner, ROLES.admin],
-  filter: { key: 'type', label: 'Tip', options: ['Panel', 'Inverter'] },
+  filters: [
+    {
+      id: 'type',
+      label: 'Tip',
+      options: [
+        { value: 'Panel', label: 'Panel' },
+        { value: 'Inverter', label: 'Inverter' },
+      ],
+      match: (row, value) => row['type'] === value,
+    },
+    {
+      id: 'warranty',
+      label: 'Garancija',
+      options: [
+        { value: 'valid', label: 'Veljavna' },
+        { value: 'expiring', label: 'Poteče v 30 dneh' },
+        { value: 'expired', label: 'Potekla' },
+      ],
+      match: (row, value) => warrantyStatus(row['warrantyUntil']).state === value,
+    },
+  ],
   fields: [
     { key: 'installationId', label: 'Sistem', type: 'select', ref: installationRef },
     { key: 'type', label: 'Tip', type: 'select', options: ['Panel', 'Inverter'] },
@@ -38,7 +59,7 @@ export const DEVICES: PageConfig = {
     { key: 'model', label: 'Model', type: 'text' },
     { key: 'serialNumber', label: 'Serijska številka', type: 'text' },
     { key: 'installedOn', label: 'Datum namestitve', type: 'date' },
-    { key: 'warrantyUntil', label: 'Garancija do', type: 'date' },
+    { key: 'warrantyUntil', label: 'Garancija do', type: 'date', badge: 'warranty' },
   ],
   empty: () => ({ installationId: '', type: 'Panel', manufacturer: '', model: '', serialNumber: '', installedOn: '', warrantyUntil: '' }),
 };
