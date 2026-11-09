@@ -56,3 +56,6 @@ skills-lock.json
 
 # Secrets
 .env
+
+# Podatkovno jezero
+datalake/
