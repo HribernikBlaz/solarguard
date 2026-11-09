@@ -31,6 +31,15 @@ public class InstallationsController(AppDbContext db, ProductionService producti
         return null;
     }
 
+    protected override async Task<string?> CanDelete(Installation item)
+    {
+        var hasActiveOrder = await Db.ServiceOrders.AnyAsync(o => o.InstallationId == item.Id && o.Status != ServiceOrderStatus.Completed);
+        if (hasActiveOrder)
+            return "Sistema ni mogoče izbrisati, ker ima nezaključen servisni nalog.";
+
+        return null;
+    }
+
     private async Task<bool> IsTechnician(Guid userId) =>
         await (from ur in Db.UserRoles
                join r in Db.Roles on ur.RoleId equals r.Id

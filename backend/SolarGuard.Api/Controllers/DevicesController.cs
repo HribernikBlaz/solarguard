@@ -29,4 +29,15 @@ public class DevicesController(AppDbContext db) : CrudController<Device>(db)
 
         return null;
     }
+
+    protected override async Task<string?> CanDelete(Device item)
+    {
+        var hasActiveOrder = await Db.ServiceOrders
+            .Where(o => o.Status != ServiceOrderStatus.Completed)
+            .AnyAsync(o => Db.Alarms.Any(a => a.Id == o.AlarmId && a.DeviceId == item.Id));
+        if (hasActiveOrder)
+            return "Naprave ni mogoče izbrisati, ker ima nezaključen servisni nalog.";
+
+        return null;
+    }
 }
