@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AlarmList } from '../../components/alarm-list/alarm-list';
 import { ForecastCard } from '../../components/forecast-card/forecast-card';
+import { ServiceHistoryDialog } from '../../components/service-history-dialog/service-history-dialog';
 import { ServiceOrderList } from '../../components/service-order-list/service-order-list';
+import { Device } from '../../services/dtos/device';
 import { Overview } from '../../services/dtos/overview';
 import { AuthService } from '../../services/auth-service';
 import { SolarDataService } from '../../services/solar-data-service';
@@ -13,7 +15,7 @@ import { TABS, TECHNICIAN_TABS } from '../../shared/constants/system-tabs';
 
 @Component({
   selector: 'app-system-detail-view',
-  imports: [DatePipe, DecimalPipe, FormsModule, RouterLink, AlarmList, ForecastCard, ServiceOrderList],
+  imports: [DatePipe, DecimalPipe, FormsModule, RouterLink, AlarmList, ForecastCard, ServiceHistoryDialog, ServiceOrderList],
   templateUrl: './system-detail-view.html',
 })
 export class SystemDetailView implements OnInit {
@@ -22,6 +24,7 @@ export class SystemDetailView implements OnInit {
   protected readonly tabs = this.isTechnician ? TABS.filter((t) => TECHNICIAN_TABS.includes(t[0])) : TABS;
   protected readonly tab = signal<(typeof TABS)[number][0]>('naprave');
   protected readonly days = signal(7);
+  protected readonly historyDevice = signal<Device | null>(null);
   protected readonly o = signal<Overview | null>(null);
   protected readonly error = signal('');
   private readonly data = inject(SolarDataService);

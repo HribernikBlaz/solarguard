@@ -22,16 +22,17 @@
     @case ('naprave') {
       <table>
         <thead>
-          <tr><th>Tip</th><th>Proizvajalec</th><th>Model</th><th>Serijska št.</th><th>Garancija do</th></tr>
+          <tr><th>Tip</th><th>Proizvajalec</th><th>Model</th><th>Serijska št.</th><th>Garancija do</th><th></th></tr>
         </thead>
         <tbody>
           @for (d of o.devices; track d.id) {
             <tr>
               <td>{{ d.type }}</td><td>{{ d.manufacturer }}</td><td>{{ d.model }}</td><td>{{ d.serialNumber }}</td>
               <td>{{ d.warrantyUntil | date: 'dd.MM.yyyy' }}</td>
+              <td><button type="button" class="btn" (click)="historyDevice.set(d)">Servisna zgodovina</button></td>
             </tr>
           } @empty {
-            <tr><td colspan="5">Ni naprav.</td></tr>
+            <tr><td colspan="6">Ni naprav.</td></tr>
           }
         </tbody>
       </table>
@@ -78,4 +79,8 @@
       <app-service-order-list [installationId]="id()" />
     }
   }
+}
+
+@if (historyDevice(); as device) {
+  <app-service-history-dialog [device]="device" (dismissed)="historyDevice.set(null)" />
 }

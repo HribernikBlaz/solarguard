@@ -75,9 +75,14 @@ public class InstallationsController(AppDbContext db, ProductionService producti
 
     protected override async Task<string?> CanDelete(Installation item)
     {
-        var hasActiveOrder = await Db.ServiceOrders.AnyAsync(o => o.InstallationId == item.Id && o.Status != ServiceOrderStatus.Completed);
+        var orders = Db.ServiceOrders.Where(o => o.InstallationId == item.Id);
+        var hasActiveOrder = await orders.AnyAsync(o => o.Status != ServiceOrderStatus.Completed);
         if (hasActiveOrder)
             return "Sistema ni mogoče izbrisati, ker ima nezaključen servisni nalog.";
+
+        var hasHistory = await orders.AnyAsync();
+        if (hasHistory)
+            return "Sistema ni mogoče izbrisati, ker ima servisno zgodovino.";
 
         return null;
     }

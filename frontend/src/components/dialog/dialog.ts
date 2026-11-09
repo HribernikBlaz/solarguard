@@ -7,6 +7,7 @@ import { AfterViewInit, Component, ElementRef, input, output, viewChild } from '
 export class Dialog implements AfterViewInit {
   readonly title = input.required<string>();
   readonly dismissOnBackdrop = input(true);
+  readonly wide = input(false);
   readonly dismissed = output<void>();
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
 
