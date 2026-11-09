@@ -7,6 +7,7 @@ const deviceRef = { path: 'devices', label: (r: any) => `${r.manufacturer} ${r.m
 
 export const INSTALLATIONS: PageConfig = {
   title: 'Sistemi',
+  itemName: 'sistem',
   path: 'installations',
   detail: '/sistemi',
   writeRoles: [ROLES.owner, ROLES.admin],
@@ -25,6 +26,7 @@ export const INSTALLATIONS: PageConfig = {
 
 export const DEVICES: PageConfig = {
   title: 'Naprave',
+  itemName: 'napravo',
   path: 'devices',
   sortBy: 'installedOn',
   writeRoles: [ROLES.owner, ROLES.admin],
@@ -43,6 +45,7 @@ export const DEVICES: PageConfig = {
 
 export const MEASUREMENTS: PageConfig = {
   title: 'Meritve',
+  itemName: 'meritev',
   path: 'measurements',
   sortBy: 'timestamp',
   writeRoles: [ROLES.admin],

@@ -106,6 +106,82 @@ describe('CrudPage', () => {
     expect(buttonTexts(fixture.nativeElement)).toEqual(['Razvrsti: najnovejše prej']);
   });
 
+
+  const open = async (role: string, rows: Record<string, unknown>[]) => {
+    signIn(role);
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
+    const http = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(CrudPage);
+    fixture.componentRef.setInput('config', DEVICES);
+    fixture.detectChanges();
+    http.expectOne('/api/devices').flush(rows);
+    http.expectOne('/api/installations').flush([{ id: 'i1', name: 'Streha' }]);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    return { http, fixture, el: fixture.nativeElement as HTMLElement };
+  };
+
+  const device = (id: string) => ({ id, installationId: 'i1', type: 'Panel', manufacturer: id, model: 'M', serialNumber: id, installedOn: '2024-01-01', warrantyUntil: '2030-01-01' });
+  const press = (el: HTMLElement, text: string) => [...el.querySelectorAll('button')].find((b) => b.textContent!.trim() === text)!.click();
+
+  it('adds a device in a dialog and keeps it open with the server message when saving fails', async () => {
+    const { http, fixture, el } = await open('Lastnik', []);
+
+    press(el, 'Dodaj napravo');
+    fixture.detectChanges();
+    expect(el.querySelector('dialog')!.textContent).toContain('Dodaj napravo');
+
+    fixture.componentInstance['form'].update((f) => ({ ...f, installationId: 'i1', manufacturer: 'A', model: 'B', serialNumber: 'C', installedOn: '2024-01-01', warrantyUntil: '2030-01-01' }));
+    fixture.detectChanges();
+    el.querySelector('form')!.dispatchEvent(new Event('submit'));
+    http.expectOne('/api/devices').flush('Serijska številka je v tem sistemu že uporabljena.', { status: 400, statusText: 'Bad Request' });
+    fixture.detectChanges();
+
+    expect(el.querySelector('dialog')!.textContent).toContain('Serijska številka je v tem sistemu že uporabljena.');
+  });
+
+  it('closes the dialog on cancel without sending anything', async () => {
+    const { http, fixture, el } = await open('Lastnik', [device('d1')]);
+
+    press(el, 'Uredi');
+    fixture.detectChanges();
+    press(el, 'Prekliči');
+    fixture.detectChanges();
+
+    expect(el.querySelector('dialog')).toBeNull();
+    http.expectNone('/api/devices/d1');
+  });
+
+  it('asks before deleting and shows why the server refused', async () => {
+    const { http, fixture, el } = await open('Lastnik', [device('d1')]);
+
+    press(el, 'Izbriši');
+    fixture.detectChanges();
+    expect(el.querySelector('dialog')!.textContent).toContain('Res želite izbrisati');
+    http.expectNone('/api/devices/d1');
+
+    press(el.querySelector('dialog')!, 'Izbriši');
+    http.expectOne('/api/devices/d1').flush('Naprave ni mogoče izbrisati, ker ima nezaključen servisni nalog.', { status: 409, statusText: 'Conflict' });
+    fixture.detectChanges();
+
+    expect(el.querySelector('dialog')!.textContent).toContain('ima nezaključen servisni nalog');
+  });
+
+  it('searches the rows and pages the result', async () => {
+    const rows = Array.from({ length: 12 }, (_, i) => device('N' + String(i).padStart(2, '0')));
+    const { fixture, el } = await open('Lastnik', rows);
+    const body = () => el.querySelectorAll('tbody tr').length;
+
+    expect(body()).toBe(10);
+    expect(el.textContent).toContain('1–10 od 12');
+
+    fixture.componentInstance['setSearch']('n11');
+    fixture.detectChanges();
+
+    expect(body()).toBe(1);
+  });
+
   it('shows the technician name to an admin', async () => {
     signIn('Admin');
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
