@@ -1,4 +1,5 @@
 import { PageConfig } from '../models/page-config';
+import { ROLES } from './roles';
 
 const installationRef = { path: 'installations', label: (r: any) => r.name };
 const technicianRef = { path: 'technicians', label: (r: any) => r.name };
@@ -8,6 +9,7 @@ export const INSTALLATIONS: PageConfig = {
   title: 'Sistemi',
   path: 'installations',
   detail: '/sistemi',
+  writeRoles: [ROLES.owner, ROLES.admin],
   fields: [
     { key: 'name', label: 'Naziv', type: 'text' },
     { key: 'address', label: 'Naslov', type: 'text' },
@@ -15,7 +17,7 @@ export const INSTALLATIONS: PageConfig = {
     { key: 'longitude', label: 'Lon', type: 'number' },
     { key: 'installationDate', label: 'Datum namestitve', type: 'date' },
     { key: 'ratedPowerKw', label: 'Nazivna moč (kW)', type: 'number' },
-    { key: 'electricityPrice', label: 'Cena elektrike (€/kWh)', type: 'number', optional: true },
+    { key: 'electricityPrice', label: 'Cena elektrike (€/kWh)', type: 'number', optional: true, hiddenFor: [ROLES.technician] },
     { key: 'technicianId', label: 'Serviser', type: 'select', ref: technicianRef, optional: true, adminOnly: true },
   ],
   empty: () => ({ name: '', address: '', latitude: 0, longitude: 0, installationDate: '', ratedPowerKw: 0, electricityPrice: null, technicianId: null }),
@@ -25,6 +27,7 @@ export const DEVICES: PageConfig = {
   title: 'Naprave',
   path: 'devices',
   sortBy: 'installedOn',
+  writeRoles: [ROLES.owner, ROLES.admin],
   filter: { key: 'type', label: 'Tip', options: ['Panel', 'Inverter'] },
   fields: [
     { key: 'installationId', label: 'Sistem', type: 'select', ref: installationRef },
@@ -42,6 +45,7 @@ export const MEASUREMENTS: PageConfig = {
   title: 'Meritve',
   path: 'measurements',
   sortBy: 'timestamp',
+  writeRoles: [ROLES.admin],
   fields: [
     { key: 'deviceId', label: 'Naprava', type: 'select', ref: deviceRef },
     { key: 'timestamp', label: 'Čas', type: 'datetime' },

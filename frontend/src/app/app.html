@@ -10,18 +10,20 @@
 <div class="shell" [class.bare]="!auth.session()">
   @if (auth.session()) {
     <nav>
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
-      <a routerLink="/zemljevid" routerLinkActive="active">Zemljevid</a>
-      <a routerLink="/toplotna-karta" routerLinkActive="active">Toplotna karta</a>
-      <a routerLink="/napoved" routerLinkActive="active">Napoved</a>
-      <a routerLink="/sistemi" routerLinkActive="active">Moji sistemi</a>
-      <a routerLink="/alarmi" routerLinkActive="active">Alarmi</a>
-      <a routerLink="/servisni-nalogi" routerLinkActive="active">Servisni nalogi @if (orders.activeCount() > 0) {<span class="count">{{ orders.activeCount() }}</span>}</a>
-      <a routerLink="/porocila" routerLinkActive="active">Poročila</a>
-      <a routerLink="/nastavitve" routerLinkActive="active">Nastavitve</a>
-      <small>Podatki</small>
-      <a routerLink="/naprave" routerLinkActive="active">Naprave</a>
-      <a routerLink="/meritve" routerLinkActive="active">Meritve</a>
+      @for (item of mainMenu(); track item.label) {
+        <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.path === '/' }">
+          {{ item.label }}
+          @if (item.path === '/servisni-nalogi' && orders.activeCount() > 0) {
+            <span class="count">{{ orders.activeCount() }}</span>
+          }
+        </a>
+      }
+      @if (dataMenu().length > 0) {
+        <small>Podatki</small>
+        @for (item of dataMenu(); track item.label) {
+          <a [routerLink]="item.path" routerLinkActive="active">{{ item.label }}</a>
+        }
+      }
     </nav>
   }
   <main><router-outlet /></main>

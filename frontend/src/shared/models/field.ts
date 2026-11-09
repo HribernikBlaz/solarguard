@@ -5,5 +5,6 @@ export interface Field {
   options?: string[];
   optional?: boolean;
   adminOnly?: boolean;
+  hiddenFor?: string[];
   ref?: { path: string; label: (r: any) => string };
 }

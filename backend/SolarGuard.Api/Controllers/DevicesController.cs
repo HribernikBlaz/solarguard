@@ -8,7 +8,7 @@ namespace SolarGuard.Api.Controllers;
 [Route("api/devices")]
 public class DevicesController(AppDbContext db) : CrudController<Device>(db)
 {
-    protected override IQueryable<Device> Visible() => OwnDevices();
+    protected override IQueryable<Device> Visible() => VisibleDevices();
 
     protected override async Task<string?> Prepare(Device item, Device? existing)
     {

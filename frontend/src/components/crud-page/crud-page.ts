@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { AuthService } from '../../services/auth-service';
+import { ROLES } from '../../shared/constants/roles';
 import { Field } from '../../shared/models/field';
 import { PageConfig } from '../../shared/models/page-config';
 import { fromLocalInput, toLocalInput } from '../../shared/utils/datetime';
@@ -37,12 +38,17 @@ export class CrudPage implements OnInit {
   protected readonly refs = signal<Record<string, any[]>>({});
   protected readonly form = signal<any>(null);
   protected readonly error = signal('');
-  protected readonly fields = computed(() => this.config().fields.filter((f) => !f.adminOnly || this.isAdmin()));
+  protected readonly fields = computed(() => {
+    const role = this.auth.session()?.role ?? '';
+
+    return this.config().fields.filter((f) => (!f.adminOnly || this.isAdmin()) && !f.hiddenFor?.includes(role));
+  });
   protected readonly toLocal = toLocalInput;
   protected readonly fromLocal = (v: string) => (v ? fromLocalInput(v) : '');
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly isAdmin = computed(() => this.auth.session()?.role === 'Admin');
+  private readonly isAdmin = computed(() => this.auth.session()?.role === ROLES.admin);
+  protected readonly canWrite = computed(() => this.config().writeRoles.includes(this.auth.session()?.role ?? ''));
 
   ngOnInit() {
     this.load();

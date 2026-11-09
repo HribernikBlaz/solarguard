@@ -7,5 +7,6 @@ export interface PageConfig {
   sortBy?: string;
   filter?: { key: string; label: string; options: string[] };
   detail?: string;
+  writeRoles: string[];
   empty: () => Record<string, unknown>;
 }

@@ -78,7 +78,7 @@
         <td><span class="badge" [attr.data-status]="o.result.status">{{ o.result.status }}</span></td>
       </tr>
     } @empty {
-      <tr><td colspan="4">Ni sistemov.</td></tr>
+      <tr><td colspan="4">Ni sistemov. <a routerLink="/sistemi">Dodaj prvi sistem</a></td></tr>
     }
   </tbody>
 </table>
