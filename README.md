@@ -4,10 +4,12 @@ Platforma za nadzor proizvodnje sončnih elektrarn v gospodinjstvih. Primerja de
 
 ## Tehnologije
 
-- Frontend: Angular, TypeScript, Angular Material
-- Backend: ASP.NET Core Web API (C#), Entity Framework Core
-- Podatkovna baza: PostgreSQL
+- Frontend: Angular (standalone komponente, signali), TypeScript, testi z vitest
+- Backend: ASP.NET Core Web API (C#, .NET 10), Entity Framework Core
+- Podatkovna baza: PostgreSQL (na Raspberry Pi CockroachDB)
 - Avtentikacija: ASP.NET Core Identity + JWT
+- Vreme: Open-Meteo (sevanje in oblačnost za pričakovano proizvodnjo in napoved)
+- E-pošta: SMTP prek MailKit, lokalno Mailpit
 - Lokalni razvoj: Docker, Docker Compose
 
 ## Lokalni zagon
@@ -26,6 +28,7 @@ Ob prvem zagonu se samodejno ustvari baza (shema iz `backend/SolarGuard.Api/Migr
 | ----------------- | ------------------------------------------------------------------------- |
 | Aplikacija        | http://localhost:4200                                                     |
 | API (Swagger)     | http://localhost:8080/swagger                                             |
+| Mailpit (e-pošta) | http://localhost:8025                                                     |
 | Baza (PostgreSQL) | localhost:5432, baza `solarguard`, uporabnik `postgres`, geslo `postgres` |
 
 Prijava:
@@ -36,6 +39,37 @@ Prijava:
 | Admin (vidi vse) | `admin@solarguard.local` | `Admin12345` |
 
 Nov lastnik se ustvari z registracijo v aplikaciji in na začetku nima sistemov.
+
+**Serviser** v testnih podatkih ne obstaja, ker se ne more registrirati sam. Ustvari ga admin prek API-ja:
+
+1. V PowerShellu se prijavi kot admin in ustvari serviserja:
+
+```
+$token = (Invoke-RestMethod -Method Post http://localhost:8080/api/auth/login -ContentType 'application/json' -Body '{"email":"admin@solarguard.local","password":"Admin12345"}').token
+Invoke-RestMethod -Method Post http://localhost:8080/api/auth/users -Headers @{Authorization="Bearer $token"} -ContentType 'application/json' -Body '{"email":"serviser@solarguard.local","password":"Serviser12345","firstName":"Sara","lastName":"Serviser","role":"Serviser"}'
+```
+
+2. V aplikaciji kot admin odpri **Sistemi**, uredi sistem in izberi serviserja. Serviser nato vidi ta sistem (samo za branje), njegove naprave in svoje servisne naloge.
+
+### Strani po vlogah
+
+| Stran | Lastnik | Serviser | Admin |
+|---|---|---|---|
+| Dashboard (graf, primerjava s pričakovano, prihranek, alarmi) | da | ne | da |
+| Pregled platforme | ne | ne | da |
+| Zemljevid, Toplotna karta, Napoved | da | ne | da |
+| Moji sistemi / Sistemi, Naprave | da (svoji) | samo branje (dodeljeni) | da (vsi) |
+| Alarmi | da | ne | da |
+| Servisni nalogi | da (svojih sistemov) | da (dodeljeni njemu) | da |
+| Obvestila | da | da | da |
+| Nastavitve (obveščanje) | da | ne | da |
+| Meritve | ne | ne | da |
+
+### Stanje uporabniških zgodb
+
+US-01 do US-12 in US-15 so implementirane (opis in kriteriji v [docs/05-uporabniske-zgodbe.md](docs/05-uporabniske-zgodbe.md)). US-13 (izvoz PDF/CSV) in US-14 (primerjava s podobnimi sistemi) sta neobvezni in še nista narejeni.
+
+Alarmi se zaznavajo vsako uro. Ob zagonu API-ja se zaznavanje, preverjanje garancij in mejnikov izvede takoj, zato po `docker compose restart solarguard-api` rezultat vidiš v pol minute.
 
 ### E-poštna obvestila
 
@@ -54,6 +88,15 @@ SMTP_FROM=ime@gmail.com
 Nato `docker compose up -d`. Sporočila gredo na e-poštni naslov uporabnika, zato testni računi `@solarguard.local` pravih sporočil ne dobijo; za preizkus se registriraj s pravim naslovom. Če SMTP ni nastavljen (privzeto na Raspberry Pi), obvestila ostanejo samo v aplikaciji in so označena kot nedostavljena.
 
 Ponastavitev baze (nov seed, pobriše tudi registrirane uporabnike): `docker compose down -v`, nato ponovno `docker compose up --build`.
+
+### Testi
+
+```
+cd frontend
+npx ng test --watch=false
+```
+
+Backend nima testnega projekta; pravila (`backend/SolarGuard.Api/Services/*Rules.cs`) so preizkušena ročno prek API-ja in Mailpita.
 
 ### Razvoj brez Dockerja za API in splet
 
