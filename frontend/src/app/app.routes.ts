@@ -5,7 +5,7 @@ import { ROLES } from '../shared/constants/roles';
 import { authGuard } from '../shared/guards/auth-guard';
 import { roleGuard } from '../shared/guards/role-guard';
 
-const { owner, admin } = ROLES;
+const { owner, technician, admin } = ROLES;
 const ownerOrAdmin = [roleGuard(owner, admin)];
 
 export const routes: Routes = [
@@ -21,7 +21,7 @@ export const routes: Routes = [
       { path: 'toplotna-karta', canActivate: ownerOrAdmin, loadComponent: () => import('../views/heatmap-view/heatmap-view').then((m) => m.HeatmapView) },
       { path: 'napoved', canActivate: ownerOrAdmin, loadComponent: () => import('../views/forecast-view/forecast-view').then((m) => m.ForecastView) },
       { path: 'napoved/:id', canActivate: ownerOrAdmin, loadComponent: () => import('../views/forecast-detail-view/forecast-detail-view').then((m) => m.ForecastDetailView) },
-      { path: 'obvestila', canActivate: ownerOrAdmin, loadComponent: () => import('../views/notifications-view/notifications-view').then((m) => m.NotificationsView) },
+      { path: 'obvestila', canActivate: [roleGuard(owner, technician, admin)], loadComponent: () => import('../views/notifications-view/notifications-view').then((m) => m.NotificationsView) },
       { path: 'alarmi', canActivate: ownerOrAdmin, loadComponent: () => import('../components/alarm-list/alarm-list').then((m) => m.AlarmList) },
       { path: 'sistemi', component: CrudPage, data: { config: INSTALLATIONS } },
       { path: 'sistemi/:id', loadComponent: () => import('../views/system-detail-view/system-detail-view').then((m) => m.SystemDetailView) },
@@ -29,7 +29,7 @@ export const routes: Routes = [
       { path: 'meritve', canActivate: [roleGuard(admin)], component: CrudPage, data: { config: MEASUREMENTS } },
       { path: 'servisni-nalogi', loadComponent: () => import('../components/service-order-list/service-order-list').then((m) => m.ServiceOrderList) },
       { path: 'porocila', canActivate: ownerOrAdmin, loadComponent: () => import('../components/placeholder/placeholder').then((m) => m.Placeholder), data: { title: 'Poročila', text: 'Izvoz poročil (PDF/CSV) še ni implementiran.' } },
-      { path: 'nastavitve', canActivate: ownerOrAdmin, loadComponent: () => import('../components/placeholder/placeholder').then((m) => m.Placeholder), data: { title: 'Nastavitve', text: 'Nastavitve (pragovi alarmov, obvestila) še niso implementirane. Ceno elektrike vnesete pri sistemu.' } },
+      { path: 'nastavitve', canActivate: ownerOrAdmin, loadComponent: () => import('../views/settings-view/settings-view').then((m) => m.SettingsView) },
     ],
   },
   { path: '**', redirectTo: '' },

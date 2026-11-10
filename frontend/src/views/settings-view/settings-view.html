@@ -1,0 +1,27 @@
+<div class="page-head">
+  <h1>Nastavitve</h1>
+</div>
+<section class="card">
+  <h2>Obveščanje po e-pošti</h2>
+  <p class="muted">Obvestila pošiljamo na {{ email }}. Vsa obvestila so vidna tudi na strani Obvestila.</p>
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+  @if (settings(); as s) {
+    <div class="options">
+      <label>
+        <input type="checkbox" checked disabled />
+        Kritični alarmi
+        <span class="muted">teh obvestil ni mogoče izklopiti</span>
+      </label>
+      <label>
+        <input type="checkbox" [checked]="s.milestones" [disabled]="saving()" (change)="toggleMilestones($event)" />
+        Mejniki proizvodnje
+        <span class="muted">ob prvem preseganju 1.000, 10.000, 100.000 in 1.000.000 kWh skupne proizvodnje</span>
+      </label>
+    </div>
+  } @else if (!error()) {
+    <p class="muted">Nalagam ...</p>
+  }
+  <p class="muted">Ceno elektrike nastavite pri posameznem sistemu.</p>
+</section>
