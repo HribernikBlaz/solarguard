@@ -18,7 +18,7 @@ export const MENU: MenuItem[] = [
   { path: '/sistemi', label: 'Moji sistemi', roles: [owner], section: 'main' },
   { path: '/sistemi', label: 'Sistemi', roles: [admin, technician], section: 'main' },
   { path: '/alarmi', label: 'Alarmi', roles: [owner, admin], section: 'main' },
-  { path: '/obvestila', label: 'Obvestila', roles: [owner, admin], section: 'main' },
+  { path: '/obvestila', label: 'Obvestila', roles: [owner, technician, admin], section: 'main' },
   { path: '/servisni-nalogi', label: 'Servisni nalogi', roles: [owner, technician, admin], section: 'main' },
   { path: '/porocila', label: 'Poročila', roles: [owner, admin], section: 'main' },
   { path: '/nastavitve', label: 'Nastavitve', roles: [owner, admin], section: 'main' },

@@ -6,16 +6,18 @@
 }
 <table>
   <thead>
-    <tr><th>Čas</th><th>Obvestilo</th></tr>
+    <tr><th>Čas</th><th>Vrsta</th><th>Obvestilo</th><th>E-pošta</th></tr>
   </thead>
   <tbody>
     @for (n of paged.rows(); track n.id) {
       <tr>
         <td>{{ n.createdAt | date: 'dd.MM.yyyy HH:mm' }}</td>
+        <td>{{ kindLabels[n.kind] }}</td>
         <td>{{ n.message }}</td>
+        <td><span class="badge" [attr.data-status]="emailTones[n.emailStatus]">{{ emailLabels[n.emailStatus] }}</span></td>
       </tr>
     } @empty {
-      <tr><td colspan="2">{{ ready() ? 'Ni obvestil.' : 'Nalagam ...' }}</td></tr>
+      <tr><td colspan="4">{{ ready() ? 'Ni obvestil.' : 'Nalagam ...' }}</td></tr>
     }
   </tbody>
 </table>

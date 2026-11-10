@@ -61,6 +61,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         b.Entity<Notification>().Property(n => n.Kind).HasConversion<string>();
         b.Entity<Notification>().HasIndex(n => new { n.UserId, n.CreatedAt });
         b.Entity<Notification>().HasIndex(n => n.DedupeKey).IsUnique();
+        b.Entity<Notification>().Property(n => n.EmailStatus).HasConversion<string>();
+        b.Entity<Notification>().Property(n => n.EmailError).HasMaxLength(Notification.MaxEmailErrorLength);
+        b.Entity<Notification>().HasIndex(n => n.CreatedAt).HasFilter("\"EmailStatus\" = 'Pending'");
         b.Entity<Measurement>().Property(m => m.ProductionKwh).HasPrecision(12, 3);
         b.Entity<Measurement>().Property(m => m.Temperature).HasPrecision(6, 2);
         b.Entity<Measurement>().HasIndex(m => new { m.DeviceId, m.Timestamp });

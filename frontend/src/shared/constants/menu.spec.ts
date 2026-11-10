@@ -4,8 +4,8 @@ import { ROLES } from './roles';
 const labels = (role: string) => [...menuFor(role, 'main'), ...menuFor(role, 'data')].map((m) => m.label);
 
 describe('menuFor', () => {
-  it('gives the technician only systems, service orders and devices', () => {
-    expect(labels(ROLES.technician)).toEqual(['Sistemi', 'Servisni nalogi', 'Naprave']);
+  it('gives the technician only systems, notifications, service orders and devices', () => {
+    expect(labels(ROLES.technician)).toEqual(['Sistemi', 'Obvestila', 'Servisni nalogi', 'Naprave']);
   });
 
   it('hides the measurements from the owner', () => {

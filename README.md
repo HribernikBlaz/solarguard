@@ -37,6 +37,22 @@ Prijava:
 
 Nov lastnik se ustvari z registracijo v aplikaciji in na začetku nima sistemov.
 
+### E-poštna obvestila
+
+Lokalno e-pošto sprejme Mailpit (del `docker compose`), ki je ne pošlje naprej. Poslana sporočila so v spletnem vmesniku http://localhost:8025, obvestila pa tudi v aplikaciji na strani Obvestila (stolpec E-pošta pokaže, ali je bila poslana).
+
+Za pravo dostavo v `.env` (ni v repozitoriju) dodaj nastavitve SMTP strežnika, na primer za Gmail z geslom za aplikacije:
+
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=ime@gmail.com
+SMTP_PASSWORD=geslo-za-aplikacije
+SMTP_FROM=ime@gmail.com
+```
+
+Nato `docker compose up -d`. Sporočila gredo na e-poštni naslov uporabnika, zato testni računi `@solarguard.local` pravih sporočil ne dobijo; za preizkus se registriraj s pravim naslovom. Če SMTP ni nastavljen (privzeto na Raspberry Pi), obvestila ostanejo samo v aplikaciji in so označena kot nedostavljena.
+
 Ponastavitev baze (nov seed, pobriše tudi registrirane uporabnike): `docker compose down -v`, nato ponovno `docker compose up --build`.
 
 ### Razvoj brez Dockerja za API in splet
@@ -57,7 +73,7 @@ Razvojne nastavitve (povezava na lokalno bazo in JWT ključ) so v `appsettings.j
 
 ## Raspberry Pi
 
-Produkcijska različica je v `docker-compose.pi.yml` (baza CockroachDB je zunaj repozitorija, spletna stran prek Cloudflare tunela). V `.env` morajo biti `TUNNEL_TOKEN`, `JWT_KEY` ter neobvezno `ADMIN_EMAIL` in `ADMIN_PASSWORD`.
+Produkcijska različica je v `docker-compose.pi.yml` (baza CockroachDB je zunaj repozitorija, spletna stran prek Cloudflare tunela). V `.env` morajo biti `TUNNEL_TOKEN`, `JWT_KEY` ter neobvezno `ADMIN_EMAIL`, `ADMIN_PASSWORD` in nastavitve SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`) za pošiljanje obvestil.
 
 ```
 docker compose -f docker-compose.pi.yml up -d --build

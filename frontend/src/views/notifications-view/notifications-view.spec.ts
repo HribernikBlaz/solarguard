@@ -13,16 +13,20 @@ describe('NotificationsView', () => {
     return { http, fixture, el: fixture.nativeElement as HTMLElement };
   };
 
-  it('lists the notifications', async () => {
+  it('lists the notifications with their kind and email status', async () => {
     const { http, fixture, el } = setup();
 
     http.expectOne('/api/notifications').flush([
-      { id: 'n1', kind: 'WarrantyExpiring', message: 'Garancija naprave Inverter X poteče 20.11.2026 (čez 11 dni).', createdAt: '2026-11-09T10:00:00Z' },
+      { id: 'n1', kind: 'WarrantyExpiring', message: 'Garancija naprave Inverter X poteče 20.11.2026 (čez 11 dni).', createdAt: '2026-11-09T10:00:00Z', emailStatus: 'Sent' },
+      { id: 'n2', kind: 'CriticalAlarm', message: 'Kritični alarm na sistemu Hiša Novak', createdAt: '2026-11-09T11:00:00Z', emailStatus: 'Failed' },
     ]);
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect(el.textContent).toContain('Garancija naprave Inverter X');
+    expect(el.textContent).toContain('Garancija');
+    expect(el.textContent).toContain('Poslana');
+    expect(el.textContent).toContain('Ni dostavljena');
   });
 
   it('says there are none when the list is empty', async () => {
@@ -33,5 +37,15 @@ describe('NotificationsView', () => {
     fixture.detectChanges();
 
     expect(el.textContent).toContain('Ni obvestil.');
+  });
+
+  it('shows an error when the first load fails', async () => {
+    const { http, fixture, el } = setup();
+
+    http.expectOne('/api/notifications').flush('Napaka', { status: 500, statusText: 'Server Error' });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(el.querySelector('.error')).not.toBeNull();
   });
 });

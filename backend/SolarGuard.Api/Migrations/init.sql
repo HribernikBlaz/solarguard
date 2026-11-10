@@ -295,3 +295,23 @@ VALUES ('20261109221241_Obvestila', '10.0.13');
 
 COMMIT;
 
+START TRANSACTION;
+ALTER TABLE "Notifications" ADD "EmailAttemptedAt" timestamp with time zone;
+
+ALTER TABLE "Notifications" ADD "EmailAttempts" integer NOT NULL DEFAULT 0;
+
+ALTER TABLE "Notifications" ADD "EmailError" character varying(500);
+
+ALTER TABLE "Notifications" ADD "EmailSentAt" timestamp with time zone;
+
+ALTER TABLE "Notifications" ADD "EmailStatus" text NOT NULL DEFAULT 'Pending';
+
+ALTER TABLE "AspNetUsers" ADD "NotifyMilestones" boolean NOT NULL DEFAULT TRUE;
+
+CREATE INDEX "IX_Notifications_CreatedAt" ON "Notifications" ("CreatedAt") WHERE "EmailStatus" = 'Pending';
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20261110215134_ObvestilaEposta', '10.0.13');
+
+COMMIT;
+

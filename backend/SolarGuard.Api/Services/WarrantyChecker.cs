@@ -27,15 +27,8 @@ public class WarrantyChecker(AppDbContext db)
 
         foreach (var (device, userId, key) in candidates.Where(c => !known.Contains(c.Key)))
         {
-            db.Notifications.Add(new Notification
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Kind = NotificationKind.WarrantyExpiring,
-                Message = WarrantyRules.Message(device.Type, device.SerialNumber, device.InstallationName, device.WarrantyUntil, today),
-                CreatedAt = now,
-                DedupeKey = key,
-            });
+            var message = WarrantyRules.Message(device.Type, device.SerialNumber, device.InstallationName, device.WarrantyUntil, today);
+            db.Notifications.Add(Notification.Create(userId, NotificationKind.WarrantyExpiring, message, key, now));
         }
 
         await db.SaveChangesAsync();
