@@ -163,16 +163,19 @@ public class AlarmDetector(AppDbContext db, OpenMeteoClient openMeteo, IConfigur
         db.Alarms.Add(created);
         active.Add(created);
 
-        if (severity == AlarmSeverity.Critical)
-            CreateServiceOrder(created, device, installation, assigneeId, now);
+        if (severity != AlarmSeverity.Critical)
+            return;
+
+        var order = CreateServiceOrder(created, device, installation, assigneeId, now);
+        NotifyCritical(created, order, device, installation, now);
     }
 
-    private void CreateServiceOrder(Alarm alarm, Device device, Installation installation, Guid? assigneeId, DateTime now)
+    private ServiceOrder CreateServiceOrder(Alarm alarm, Device device, Installation installation, Guid? assigneeId, DateTime now)
     {
         if (assigneeId is null)
             logger.LogWarning("Za sistem {Installation} ni serviserja ne administratorja, nalog ostane nedodeljen", installation.Name);
 
-        db.ServiceOrders.Add(new ServiceOrder
+        var order = new ServiceOrder
         {
             Id = Guid.NewGuid(),
             AlarmId = alarm.Id,
@@ -181,6 +184,25 @@ public class AlarmDetector(AppDbContext db, OpenMeteoClient openMeteo, IConfigur
             Status = ServiceOrderStatus.Open,
             Description = $"{device.Type} {device.SerialNumber}: {alarm.Description}",
             CreatedAt = now,
-        });
+        };
+        db.ServiceOrders.Add(order);
+
+        return order;
+    }
+
+    // Obvestila nastanejo v isti transakciji kot alarm in nalog; e-pošto pošlje NotificationMailer.
+    private void NotifyCritical(Alarm alarm, ServiceOrder order, Device device, Installation installation, DateTime now)
+    {
+        if (installation.OwnerId is { } ownerId)
+        {
+            var message = AlarmNotificationRules.CriticalAlarmMessage(installation.Name, $"{device.Type} {device.SerialNumber}", alarm.Description);
+            db.Notifications.Add(Notification.Create(ownerId, NotificationKind.CriticalAlarm, message, AlarmNotificationRules.AlarmKey(alarm.Id, ownerId), now));
+        }
+
+        if (order.AssigneeId is { } assigneeId)
+        {
+            var message = AlarmNotificationRules.ServiceOrderMessage(installation.Name, order.Description);
+            db.Notifications.Add(Notification.Create(assigneeId, NotificationKind.ServiceOrderAssigned, message, AlarmNotificationRules.ServiceOrderKey(order.Id, assigneeId), now));
+        }
     }
 }
